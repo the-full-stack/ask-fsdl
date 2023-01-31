@@ -1,0 +1,9 @@
+-r requirements.txt
+jupyter
+mistune
+pandas
+python-slugify
+pymongo[srv]
+smart-open
+srt
+youtube-transcript-api
