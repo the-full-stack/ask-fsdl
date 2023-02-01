@@ -39,7 +39,7 @@ document_storage: dev_environment ## runs the corpus generation notebook locally
 
 vector_storage: modal_auth ## updates a Pinecone vector store to contain embeddings of the document corpus
 	@echo "###"
-	@echo "# 🥞: Assumes you've set up the document storage
+	@echo "# 🥞: Assumes you've set up the document storage"
 	@echo "###"
 	modal run app.py::stub.sync_vector_db_to_doc_db
 
@@ -48,7 +48,7 @@ debugger: modal_auth ## starts a debugger in the terminal running on Modal's inf
 
 modal_auth: environment ## confirms authentication with Modal, using secrets from `.env` file
 	@echo "###"
-	@echo "# 🥞: If you haven't gotten a Modal token yet, run make modal_token
+	@echo "# 🥞: If you haven't gotten a Modal token yet, run make modal_token"
 	@echo "###"
 	@modal token set --token-id $(MODAL_TOKEN_ID) --token-secret $(MODAL_TOKEN_SECRET)
 
