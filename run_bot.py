@@ -1,64 +1,86 @@
 """Run a Discord bot that does document Q&A using Modal."""
+import argparse
 import os
 
 import discord
 from dotenv import load_dotenv
+import requests
 
 load_dotenv()
 
 MODAL_USER_NAME = os.environ["MODAL_USER_NAME"]
-BACKEND_URL = "https://{MODAL_USER_NAME}--ask-fsdl-hook.modal.run"
+BACKEND_URL = f"https://{MODAL_USER_NAME}--ask-fsdl-hook.modal.run"
 DISCORD_AUTH = os.environ["DISCORD_AUTH"]
-
-TRIGGER_PHRASE = "$ask-fsdl"
-
-# Discord auth requirements: default behaviors
-intents = discord.Intents.default()
-# plus reading messages
-intents.message_content = True
-
-# connect to Discord
-client = discord.Client(intents=intents)
-
-# only read/write messages in certain channels
-TARGETED_CHANNELS = [
-    1066450466898186382, # dev channel: `ask-fsdl-dev`
-    1066557596313604200, # main channel: `ask-fsdl`
-    984528990368825395,  # `instructor-lounge`
-]
+BASE_TRIGGER_PHRASE = "$ask-fsdl"
 
 
 def runner(query):
-    import requests
-
     payload = {"query": query}
     response = requests.get(url=BACKEND_URL, params=payload)
+
+    response.raise_for_status()
 
     return response.json()["answer"]
 
 
-@client.event
-async def on_ready():
-    print(f'We have logged in as {client.user}')
+def main(targeted_channels, trigger_phrase, auth):
+    # Discord auth requires statement of "intents"
+    #  we start with default behaviors
+    intents = discord.Intents.default()
+    #  and add reading messages
+    intents.message_content = True
+    # then connect to Discord
+    client = discord.Client(intents=intents)
 
 
-@client.event
-async def on_message(message):
-    if message.channel.id not in TARGETED_CHANNELS:
-        return
-
-    if message.author == client.user:
-        # ignore posts by self
-        return
-    else:
-        respondent = message.author
+    # define the bot's behavior
+    @client.event
+    async def on_ready():
+        print(f'We have logged in as {client.user}')
 
 
-    if message.content.startswith(TRIGGER_PHRASE):
-        header, *content = message.content.split(TRIGGER_PHRASE)  # parse
-        content =  "".join(content).strip()
-        response = runner(content)  # execute
-        await message.channel.send(f'{respondent.mention} {response}')  # respond
+    @client.event
+    async def on_message(message):
+        if message.channel.id not in targeted_channels:
+            return
+
+        if message.author == client.user:
+            # ignore posts by self
+            return
+        else:
+            respondent = message.author
+
+        if message.content.startswith(trigger_phrase):
+            header, *content = message.content.split(trigger_phrase)  # parse
+            content =  "".join(content).strip()
+            print(f"🤖: responding to message \"{content}\"")
+            response = runner(content)  # execute
+            await message.channel.send(f'{respondent.mention} {response}')  # respond
+
+    client.run(auth)
 
 
-client.run(DISCORD_AUTH)
+def make_argparser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dev", action="store_true", help="Run in development mode.")
+
+    return parser
+
+
+if __name__ == "__main__":
+    parser = make_argparser()
+    args = parser.parse_args()
+
+    targeted_channels = [
+        1066557596313604200, # main channel: `ask-fsdl`
+    ]
+    trigger_phrase = BASE_TRIGGER_PHRASE
+
+    if args.dev:
+        targeted_channels = [
+        1066450466898186382, # dev channel: `ask-fsdl-dev`
+        984528990368825395,  # `instructor-lounge`
+        ]
+        trigger_phrase = "$dev-" + BASE_TRIGGER_PHRASE.strip("$")
+
+    main(targeted_channels, trigger_phrase, auth=DISCORD_AUTH)
