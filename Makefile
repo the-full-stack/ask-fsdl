@@ -44,7 +44,7 @@ vector_storage: modal_auth ## updates a Pinecone vector store to contain embeddi
 	modal run app.py::stub.sync_vector_db_to_doc_db
 
 debugger: modal_auth ## starts a debugger in the terminal running on Modal's infra
-	modal run app::stub.debug
+	modal run app.py::stub.debug
 
 modal_auth: environment ## confirms authentication with Modal, using secrets from `.env` file
 	@echo "###"
