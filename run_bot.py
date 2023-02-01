@@ -53,7 +53,7 @@ def main(targeted_channels, auth):
 
         print(f"🤖: responding to question \"{question}\"")
         response = runner(question)  # execute
-        await ctx.send(f"{respondent.mention} asked: {question}\n\nHere's my response, with sources so you can read more:\n\n{response}")  # respond
+        await ctx.respond(f"{respondent.mention} asked: {question}\n\nHere's my response, with sources so you can read more:\n\n{response}")  # respond
 
     bot.run(auth)
 
