@@ -37,6 +37,12 @@ def main(auth):
     async def on_ready():
         print(f"🤖: {bot.user} is ready and online!")
 
+    response_fmt = \
+    """{mention} asked: {question}
+
+    Here's my best guess at an answer, with sources so you can read more:
+
+    {response}"""
     # add our command
     @bot.slash_command(name="ask", description="Answers questions about FSDL material.")
     async def answer(ctx, question: str):
@@ -46,7 +52,7 @@ def main(auth):
         print(f"🤖: responding to question \"{question}\"")
         await ctx.respond("Working on it!", ephemeral=True)
         response = runner(question)  # execute
-        await ctx.send_followup(f"{respondent.mention} asked: {question}\n\nHere's my response, with sources so you can read more:\n\n{response}")  # respond
+        await ctx.send_followup(response_fmt.format(mention=respondent.mention, question=question, response=response))  # respond
 
     bot.run(auth)
 
