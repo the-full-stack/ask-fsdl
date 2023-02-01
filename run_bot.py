@@ -1,3 +1,4 @@
+"""Run a Discord bot that does document Q&A using Modal."""
 import os
 
 import discord
@@ -5,8 +6,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BACKEND_URL = "https://charlesfrye--ask-fsdl-web.modal.run"
+MODAL_USER_NAME = os.environ["MODAL_USER_NAME"]
+BACKEND_URL = "https://{MODAL_USER_NAME}--ask-fsdl-hook.modal.run"
 DISCORD_AUTH = os.environ["DISCORD_AUTH"]
+
+TRIGGER_PHRASE = "$ask-fsdl"
 
 # Discord auth requirements: default behaviors
 intents = discord.Intents.default()
@@ -50,8 +54,8 @@ async def on_message(message):
         respondent = message.author
 
 
-    if message.content.startswith('$ask-fsdl'):
-        header, *content = message.content.split("$ask-fsdl")  # parse
+    if message.content.startswith(TRIGGER_PHRASE):
+        header, *content = message.content.split(TRIGGER_PHRASE)  # parse
         content =  "".join(content).strip()
         response = runner(content)  # execute
         await message.channel.send(f'{respondent.mention} {response}')  # respond

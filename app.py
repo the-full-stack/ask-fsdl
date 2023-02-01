@@ -1,4 +1,6 @@
-"""Builds a CLI, Webhook, and Gradio app for LLM Q&A on the FSDL Corpus."""
+"""Builds a CLI, Webhook, and Gradio app for LLM Q&A on the FSDL Corpus.
+
+For details on corpus construction, see the accompanying notebook."""
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -45,6 +47,7 @@ def sync_vector_db_to_doc_db():
     mongodb_uri = os.environ["MONGODB_URI"]
     connection_string = f"mongodb+srv://fsdl:{mongodb_password}@{mongodb_uri}/?retryWrites=true&w=majority"
     client = pymongo.MongoClient(connection_string)
+    print("🥞: connected to document DB")
 
     ###
     # Connect to VectorDB
@@ -52,6 +55,7 @@ def sync_vector_db_to_doc_db():
 
     pinecone_api_key = os.environ["PINECONE_API_KEY"]
     pinecone.init(api_key=pinecone_api_key, environment="us-east1-gcp")
+    print("🥞: connected to vector DB")
 
     ###
     # Spin up EmbeddingEngine
@@ -67,12 +71,13 @@ def sync_vector_db_to_doc_db():
     db = client.get_database("fsdl")
     collection = db.get_collection("ask-fsdl")
 
+    print(f"🥞: pulling documents from {collection.full_name}")
     docs = collection.find()
 
     ###
     # Chunk Documents and Spread Sources
     ###
-    print("splitting into bite-size chunks")
+    print("🥞: splitting into bite-size chunks")
 
     text_splitter = CharacterTextSplitter.from_tiktoken_encoder(
         chunk_size=500,
@@ -91,6 +96,7 @@ def sync_vector_db_to_doc_db():
     # Upsert to VectorDB
     ###
 
+    print(f"🥞: sending to vectorDB {PINECONE_INDEX}")
     Pinecone.from_texts(
         texts, base_embeddings, metadatas=metadatas, ids=ids, index_name=PINECONE_INDEX
     )
@@ -116,7 +122,7 @@ def qanda_langchain(query: str) -> tuple[str, list[str]]:
     ###
     # Connect to VectorDB
     ###
-    print("connecting to Pinecone")
+    print("🥞: connecting to Pinecone")
     pinecone_api_key = os.environ["PINECONE_API_KEY"]
     pinecone.init(api_key=pinecone_api_key, environment="us-east1-gcp")
     docsearch = Pinecone.from_existing_index(index_name=PINECONE_INDEX, embedding=base_embeddings)
@@ -124,13 +130,13 @@ def qanda_langchain(query: str) -> tuple[str, list[str]]:
     ###
     # Run docsearch
     ###
-    print("selecting text parts by similarity to query")
+    print("🥞: selecting sources by similarity to query")
     docs = docsearch.similarity_search(query)
 
     ###
     # Run chain
     ###
-    print("running query against Q&A chain")
+    print("🥞: running query against Q&A chain")
     chain = load_qa_with_sources_chain(
         OpenAI(temperature=0,), chain_type="stuff"
     )
@@ -142,7 +148,7 @@ def qanda_langchain(query: str) -> tuple[str, list[str]]:
     return answer
 
 
-@stub.webhook(method="GET")
+@stub.webhook(method="GET", label="ask-fsdl-hook")
 def web(query: str, show_sources: bool = True):
     answer = qanda_langchain(query)
     return {
@@ -156,7 +162,7 @@ def cli(query: str, show_sources: bool = True):
     # Terminal codes for pretty-printing.
     bold, end = "\033[1m", "\033[0m"
 
-    print(f"🦜 {bold}ANSWER:{end}")
+    print(f"🦜🥞 {bold}ANSWER:{end}")
     print(answer)
 
 
@@ -193,3 +199,4 @@ def fastapi_app():
     )
 def debug():
     import IPython
+    IPython.embed()
