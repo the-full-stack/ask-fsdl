@@ -1,4 +1,4 @@
-"""Run a Discord bot that does document Q&A using Modal."""
+"""Run a Discord bot that does document Q&A using Modal and langchain."""
 import argparse
 import os
 
@@ -23,8 +23,7 @@ def runner(query):
     return response.json()["answer"]
 
 
-
-def main(targeted_channels, auth):
+def main(auth):
     # Discord auth requires statement of "intents"
     #  we start with default behaviors
     intents = discord.Intents.default()
@@ -42,18 +41,12 @@ def main(targeted_channels, auth):
     @bot.slash_command(name="ask", description="Answers questions about FSDL material.")
     async def answer(ctx, question: str):
         """Answers questions about FSDL material."""
-        if ctx.channel.id not in targeted_channels:
-            return
-
-        if ctx.author == bot.user:
-            # ignore posts by self
-            return
-        else:
-            respondent = ctx.author
+        respondent = ctx.author
 
         print(f"🤖: responding to question \"{question}\"")
+        await ctx.respond("Working on it!", ephemeral=True)
         response = runner(question)  # execute
-        await ctx.respond(f"{respondent.mention} asked: {question}\n\nHere's my response, with sources so you can read more:\n\n{response}")  # respond
+        await ctx.send_followup(f"{respondent.mention} asked: {question}\n\nHere's my response, with sources so you can read more:\n\n{response}")  # respond
 
     bot.run(auth)
 
@@ -66,17 +59,4 @@ def make_argparser():
 
 
 if __name__ == "__main__":
-    parser = make_argparser()
-    args = parser.parse_args()
-
-    targeted_channels = [
-        1066557596313604200, # main channel: `ask-fsdl`
-    ]
-
-    if args.dev:
-        targeted_channels = [
-        1066450466898186382, # dev channel: `ask-fsdl-dev`
-        984528990368825395,  # `instructor-lounge`
-        ]
-
-    main(targeted_channels, auth=DISCORD_AUTH)
+    main(auth=DISCORD_AUTH)
