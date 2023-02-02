@@ -1,5 +1,6 @@
 """Run a Discord bot that does document Q&A using Modal and langchain."""
 import argparse
+import logging
 import os
 
 import aiohttp
@@ -19,6 +20,8 @@ guild_ids = {
     "prod": 984525101678612540,
 }
 
+START, END = "\033[1;36m", "\033[0m"
+
 
 async def runner(query):
     payload = {"query": query}
@@ -27,6 +30,10 @@ async def runner(query):
             assert response.status == 200
             json = await response.json()
             return json["answer"]
+
+
+def pretty_log(str):
+    print(f"{START}🤖: {str}{END}")
 
 
 def main(auth, guilds, debug=False):
@@ -40,7 +47,7 @@ def main(auth, guilds, debug=False):
 
     @bot.event
     async def on_ready():
-        print(f"🤖: {bot.user} is ready and online!")
+       pretty_log(f"{bot.user} is ready and online!")
 
     response_fmt = \
     """{mention} asked: {question}
@@ -50,21 +57,22 @@ def main(auth, guilds, debug=False):
     {response}"""
 
     # add our command
-    @bot.slash_command(name="ask", description="Answers questions about FSDL material.")
+    @bot.slash_command(name="ask")
     async def answer(ctx, question: str):
         """Answers questions about FSDL material."""
         respondent = ctx.author
 
-        print(f"🤖: responding to question \"{question}\"")
+        pretty_log(f"responding to question \"{question}\"")
         await ctx.respond("Working on it!", ephemeral=True)
         response = runner(question)  # execute
+        response.strip()
         await ctx.send_followup(response_fmt.format(mention=respondent.mention, question=question, response=response))  # respond
 
     if debug:
         @bot.slash_command()
         async def health(ctx):
             "Supports a Discord bot version of a liveness probe."
-            print(f"🤖: inside foo")
+            pretty_log(f"inside healthcheck")
             await ctx.respond("200 more like 💯 mirite")
 
     bot.run(auth)
@@ -85,4 +93,8 @@ if __name__ == "__main__":
         guilds = [guild_ids["dev"]]
     else:
         guilds = [guild_ids["prod"]]
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
     main(auth=DISCORD_AUTH, guilds=guilds, debug=args.dev or args.debug)
