@@ -82,7 +82,6 @@ def make_argparser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dev", action="store_true", help="Run in development mode.")
     parser.add_argument("--debug", action="store_true", help="Add debugging commands.")
-    parser.add_argument("--monitor", action="store_true", help="Log bot behavior.")
 
     return parser
 
