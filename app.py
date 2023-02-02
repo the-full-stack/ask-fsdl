@@ -35,7 +35,7 @@ START, END = "\033[1;38;5;214m", "\033[0m"
 
 
 def pretty_log(str):
-    print(f"{START}🥞: {str}{END}", end="\n")
+    print(f"{START}🥞: {str}{END}")
 
 
 @stub.function(
@@ -182,6 +182,7 @@ def qanda_langchain(query: str, request_id=None, with_logging=False) -> str:
 
 @stub.webhook(method="GET", label="ask-fsdl-hook")
 def web(query: str, request_id=None):
+    pretty_log(f"handling request with client-provided id: {request_id}") if request_id else None
     answer = qanda_langchain(query, request_id=request_id, with_logging=True)
     return {
         "answer": answer,
@@ -189,9 +190,8 @@ def web(query: str, request_id=None):
 
 
 @stub.function(image=image)
-def cli(query: str, show_sources: bool = True):
+def cli(query: str):
     answer = qanda_langchain(query)
-
     pretty_log(f"🦜 ANSWER 🦜")
     print(answer)
 
