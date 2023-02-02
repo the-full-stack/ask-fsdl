@@ -90,6 +90,7 @@ def main(auth, guilds, dev=False):
         await ctx.respond(response_fmt.format(mention=respondent.mention, question=question, answer=answer))  # respond
         for emoji in rating_emojis:
             await original_message.add_reaction(emoji)
+            await asyncio.sleep(0.25)
 
 
     if dev:
