@@ -24,12 +24,15 @@ deploy_backend: modal_auth ## deploy the Q&A backend on Modal
 	@echo "# 🥞: Assumes you've set up the vector storage"
 	@echo "###"
 	modal deploy app.py
+	@echo "###"
+	@echo "# 🥞: Gradio interface available at /gradio route"
+	@echo "###"
 
-local_query: modal_auth ## run a test query locally
+cli_query: modal_auth ## run a query via a CLI interface
 	@echo "###"
 	@echo "# 🥞: Assumes you've set up the vector storage"
 	@echo "###"
-	modal run app.py::stub.cli --query "What is PyTorch?"
+	modal run app.py::stub.cli --query "${QUERY}"
 
 document_storage: dev_environment ## runs the corpus generation notebook locally, stor
 	@echo "###"

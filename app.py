@@ -13,17 +13,29 @@ image = modal.Image.debian_slim(python_version="3.10").pip_install(
     "pinecone-client",
     "pymongo==3.11",
     "gradio~=3.17",
+    "gantry==0.5.6",
     "tiktoken",
 )
+
 stub = modal.Stub(
     name="ask-fsdl",
     image=image,
     secrets=[
-        modal.Secret.from_name("pinecone-api-key"), modal.Secret.from_name("openai-api-key"), modal.Secret.from_name("mongodb")
+        modal.Secret.from_name("pinecone-api-key"),
+        modal.Secret.from_name("openai-api-key"),
+        modal.Secret.from_name("mongodb"),
+        modal.Secret.from_name("gantry-api-key"),
     ],
 )
 
 PINECONE_INDEX = "openai-ada-fsdl"
+
+# Terminal codes for pretty-printing.
+START, END = "\033[1;38;5;214m", "\033[0m"
+
+
+def pretty_log(str):
+    print(f"{START}🥞: {str}{END}", end="\n")
 
 
 @stub.function(
@@ -47,7 +59,7 @@ def sync_vector_db_to_doc_db():
     mongodb_uri = os.environ["MONGODB_URI"]
     connection_string = f"mongodb+srv://fsdl:{mongodb_password}@{mongodb_uri}/?retryWrites=true&w=majority"
     client = pymongo.MongoClient(connection_string)
-    print("🥞: connected to document DB")
+    pretty_log("connected to document DB")
 
     ###
     # Connect to VectorDB
@@ -55,7 +67,7 @@ def sync_vector_db_to_doc_db():
 
     pinecone_api_key = os.environ["PINECONE_API_KEY"]
     pinecone.init(api_key=pinecone_api_key, environment="us-east1-gcp")
-    print("🥞: connected to vector DB")
+    pretty_log("connected to vector DB")
 
     ###
     # Spin up EmbeddingEngine
@@ -71,13 +83,13 @@ def sync_vector_db_to_doc_db():
     db = client.get_database("fsdl")
     collection = db.get_collection("ask-fsdl")
 
-    print(f"🥞: pulling documents from {collection.full_name}")
+    pretty_log(f"pulling documents from {collection.full_name}")
     docs = collection.find()
 
     ###
     # Chunk Documents and Spread Sources
     ###
-    print("🥞: splitting into bite-size chunks")
+    pretty_log("splitting into bite-size chunks")
 
     text_splitter = CharacterTextSplitter.from_tiktoken_encoder(
         chunk_size=500,
@@ -96,15 +108,16 @@ def sync_vector_db_to_doc_db():
     # Upsert to VectorDB
     ###
 
-    print(f"🥞: sending to vectorDB {PINECONE_INDEX}")
+    pretty_log(f"sending to vectorDB {PINECONE_INDEX}")
     Pinecone.from_texts(
         texts, base_embeddings, metadatas=metadatas, ids=ids, index_name=PINECONE_INDEX
     )
 
 
-def qanda_langchain(query: str) -> tuple[str, list[str]]:
+def qanda_langchain(query: str, request_id=None, with_logging=False) -> str:
     import os
 
+    import gantry
     from langchain.chains.qa_with_sources import load_qa_with_sources_chain
     from langchain.embeddings.openai import OpenAIEmbeddings
     from langchain.llms import OpenAI
@@ -122,7 +135,7 @@ def qanda_langchain(query: str) -> tuple[str, list[str]]:
     ###
     # Connect to VectorDB
     ###
-    print("🥞: connecting to Pinecone")
+    pretty_log("connecting to Pinecone")
     pinecone_api_key = os.environ["PINECONE_API_KEY"]
     pinecone.init(api_key=pinecone_api_key, environment="us-east1-gcp")
     docsearch = Pinecone.from_existing_index(index_name=PINECONE_INDEX, embedding=base_embeddings)
@@ -130,13 +143,14 @@ def qanda_langchain(query: str) -> tuple[str, list[str]]:
     ###
     # Run docsearch
     ###
-    print("🥞: selecting sources by similarity to query")
+    pretty_log(f"running on query: {query}")
+    pretty_log(f"selecting sources by similarity to query")
     docs = docsearch.similarity_search(query)
 
     ###
     # Run chain
     ###
-    print("🥞: running query against Q&A chain")
+    pretty_log("running query against Q&A chain")
     chain = load_qa_with_sources_chain(
         OpenAI(temperature=0,), chain_type="stuff"
     )
@@ -145,12 +159,30 @@ def qanda_langchain(query: str) -> tuple[str, list[str]]:
     )
     answer = result["output_text"]
 
+    ###
+    # Log results
+    ###
+    if with_logging:
+        pretty_log("logging results to gantry")
+        gantry.init(api_key=os.environ["GANTRY_API_KEY"], environment="modal")
+
+        application = "ask-fsdl"
+        join_key = str(request_id) if request_id else None
+
+        inputs = {"question": query}
+        inputs["docs"] = "\n\n---\n\n".join(doc.page_content for doc in docs)
+        inputs["sources"] = "\n\n---\n\n".join(doc.metadata["source"] for doc in docs)
+        outputs = {"answer_text": answer}
+
+        record_key = gantry.log_record(application=application, inputs=inputs, outputs=outputs, join_key=join_key)
+        pretty_log(f"logged to gantry with key {record_key}")
+
     return answer
 
 
 @stub.webhook(method="GET", label="ask-fsdl-hook")
-def web(query: str, show_sources: bool = True):
-    answer = qanda_langchain(query)
+def web(query: str, request_id=None):
+    answer = qanda_langchain(query, request_id=request_id, with_logging=True)
     return {
         "answer": answer,
     }
@@ -159,10 +191,8 @@ def web(query: str, show_sources: bool = True):
 @stub.function(image=image)
 def cli(query: str, show_sources: bool = True):
     answer = qanda_langchain(query)
-    # Terminal codes for pretty-printing.
-    bold, end = "\033[1m", "\033[0m"
 
-    print(f"🦜🥞 {bold}ANSWER:{end}")
+    pretty_log(f"🦜 ANSWER 🦜")
     print(answer)
 
 
@@ -178,12 +208,20 @@ def fastapi_app():
     import gradio as gr
     from gradio.routes import mount_gradio_app
 
+    def chain_with_logging(*args, **kwargs):
+        return qanda_langchain(*args, with_logging=True, **kwargs)
 
     interface = gr.Interface(
-        fn=qanda_langchain,
+        fn=chain_with_logging,
         inputs="text",
         outputs="text",
-        title="Ask Questions About Deep Learning."
+        title="Ask Questions About Deep Learning.",
+        examples=[
+            "What is PyTorch? How can I decide whether to choose it over TensorFlow?",
+            "Is it cheaper to run experiments on cheap GPUs or expensive GPUs?",
+            "How do I recruit an ML team?",
+            ],
+        allow_flagging="never",
     )
 
     return mount_gradio_app(
