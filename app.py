@@ -8,7 +8,7 @@ import modal
 
 
 image = modal.Image.debian_slim(python_version="3.10").pip_install(
-    "langchain~=0.0.7",
+    "langchain~=0.0.98",
     "openai~=0.26.3",
     "pinecone-client",
     "pymongo==3.11",
