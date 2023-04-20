@@ -34,11 +34,13 @@ cli_query: modal_auth ## run a query via a CLI interface
 	@echo "###"
 	modal run app.py::stub.cli --query "${QUERY}"
 
-document_storage: dev_environment ## runs the corpus generation notebook locally, stor
+document_storage: dev_environment ## runs the corpus generation notebook locally
 	@echo "###"
-	@echo "# 🥞: Assumes you've created a Mongo database with name fsdl and collection ask-fsdl first"
+	@echo "# 🥞: Assumes you've created a Mongo database with name fsdl first"
 	@echo "###"
-	nbconvert jupyter nbconvert --ExecutePreprocessor.timeout=600 --to notebook --execute "Building the FSDL Corpus.ipynb"
+	@echo "###"
+	@echo "# 🥞: TODO
+	@echo "###"
 
 vector_storage: modal_auth ## updates a Pinecone vector store to contain embeddings of the document corpus
 	@echo "###"

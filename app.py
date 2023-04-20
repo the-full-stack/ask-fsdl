@@ -1,4 +1,4 @@
-"""Builds a CLI, Webhook, and Gradio app for LLM Q&A on the FSDL Corpus.
+"""Builds a CLI, Webhook, and Gradio app for Q&A on the FSDL corpus.
 
 For details on corpus construction, see the accompanying notebook."""
 from pathlib import Path
@@ -22,13 +22,14 @@ stub = modal.Stub(
     image=image,
     secrets=[
         modal.Secret.from_name("pinecone-api-key"),
-        modal.Secret.from_name("openai-api-key"),
+        modal.Secret.from_name("openai-api-key-fsdl"),
         modal.Secret.from_name("mongodb"),
         modal.Secret.from_name("gantry-api-key"),
     ],
 )
 
 PINECONE_INDEX = "openai-ada-fsdl"
+MONGO_COLLECTION = "ask-fsdl-llm"
 
 # Terminal codes for pretty-printing.
 START, END = "\033[1;38;5;214m", "\033[0m"
@@ -69,22 +70,31 @@ def sync_vector_db_to_doc_db():
     pinecone.init(api_key=pinecone_api_key, environment="us-east1-gcp")
     pretty_log("connected to vector DB")
 
+    try:  # sync the vector index onto the document store
+        index = pinecone.Index(PINECONE_INDEX)
+        index.delete(delete_all=True)
+        pretty_log("existing index wiped")
+    except (pinecone.core.client.exceptions.NotFoundException, pinecone.core.exceptions.PineconeProtocolError):
+        pretty_log("creating vector index")
+        pinecone.create_index(name=PINECONE_INDEX, dimension=1536, metric="cosine", pod_type="p1.x1")
+        pretty_log("vector index created")
+
     ###
     # Spin up EmbeddingEngine
     ###
 
     openai.api_key = os.environ["OPENAI_API_KEY"]
-    base_embeddings = OpenAIEmbeddings()
+    base_embeddings = OpenAIEmbeddings(model="text-embedding-ada-002", allowed_special="all")
 
     ###
     # Retrieve Documents
     ###
 
     db = client.get_database("fsdl")
-    collection = db.get_collection("ask-fsdl")
+    collection = db.get_collection(MONGO_COLLECTION)
 
     pretty_log(f"pulling documents from {collection.full_name}")
-    docs = collection.find()
+    docs = collection.find({"metadata.ignore": False})
 
     ###
     # Chunk Documents and Spread Sources
@@ -94,13 +104,15 @@ def sync_vector_db_to_doc_db():
     text_splitter = CharacterTextSplitter.from_tiktoken_encoder(
         chunk_size=500,
         chunk_overlap=100,
+        separator="\n",
+        allowed_special="all"
     )
     ids, texts, metadatas = [], [], []
     for document in docs:
         text, metadata = document["text"], document["metadata"]
         doc_texts = text_splitter.split_text(text)
         doc_metadatas = [metadata] * len(doc_texts)
-        ids += [document["sha256"]] * len(doc_texts)
+        ids += [document.get("sha256", metadata.get("sha256"))] * len(doc_texts)
         texts += doc_texts
         metadatas += doc_metadatas
 
@@ -115,6 +127,13 @@ def sync_vector_db_to_doc_db():
 
 
 def qanda_langchain(query: str, request_id=None, with_logging=False) -> str:
+    """Runs sourced Q&A for a query using LangChain.
+
+    Arguments:
+        query: The query to run Q&A on
+        request_id: A unique identifier for the request.
+        with_logging: If True, logs the interaction to Gantry.
+    """
     import os
 
     import gantry
@@ -145,7 +164,7 @@ def qanda_langchain(query: str, request_id=None, with_logging=False) -> str:
     ###
     pretty_log(f"running on query: {query}")
     pretty_log(f"selecting sources by similarity to query")
-    docs = docsearch.similarity_search(query)
+    docs = docsearch.similarity_search(query, k=5)
 
     ###
     # Run chain
@@ -199,6 +218,11 @@ def cli(query: str):
 web_app = FastAPI()
 
 
+@web_app.get("/")
+async def root():
+    return {"message": "Hello World"}
+
+
 # Wrap in a Gradio interface for debugging backend
 @stub.asgi(
     image=image,
@@ -215,8 +239,11 @@ def fastapi_app():
         fn=chain_with_logging,
         inputs="text",
         outputs="text",
-        title="Ask Questions About Deep Learning.",
+        title="Ask Questions About Full Stack Deep Learning.",
         examples=[
+            "What is zero-shot chain-of-thought prompting?",
+            "Would you rather fight 100 LLaMA-sized GPT-4s or 1 GPT-4-sized LLaMA?",
+            "What are the differences in capabilities between GPT-3 davinci and GPT-3.5 code-davinci-002?",
             "What is PyTorch? How can I decide whether to choose it over TensorFlow?",
             "Is it cheaper to run experiments on cheap GPUs or expensive GPUs?",
             "How do I recruit an ML team?",
