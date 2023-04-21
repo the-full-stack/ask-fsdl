@@ -26,7 +26,7 @@ to store our cleaned and organized document corpus,
 as shown in the "Building the FSDL Corpus" notebook.
 
 For fast search of relevant documents to insert into our prompt,
-we use the [Pinecone vector database](https://www.pinecone.io/).
+we use a [FAISS index](https://github.com/facebookresearch/faiss).
 
 We host the application backend,
 which communicates with
