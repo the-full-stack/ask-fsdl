@@ -1,4 +1,4 @@
-"""Run a Discord bot that does document Q&A using Modal and langchain."""
+"""Run a Discord bot that does document Q&A using Modal and LangChain."""
 import argparse
 import asyncio
 import logging
@@ -8,7 +8,6 @@ import aiohttp
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-import requests
 
 load_dotenv()
 
@@ -34,10 +33,6 @@ async def runner(query, request_id=None):
     return json_content["answer"]
 
 
-def pretty_log(str):
-    print(f"{START}🤖: {str}{END}")
-
-
 def main(auth, guilds, dev=False):
     # Discord auth requires statement of "intents"
     #  we start with default behaviors
@@ -47,17 +42,21 @@ def main(auth, guilds, dev=False):
 
     bot = commands.Bot(intents=intents, guilds=guilds)
 
-    rating_emojis = {"👍": "if the response was helpful", "👎": "if the response was not helpful"}
+    rating_emojis = {
+        "👍": "if the response was helpful",
+        "👎": "if the response was not helpful",
+    }
 
-    emoji_reaction_text = " or ".join(f"react with {emoji} {reason}" for emoji, reason in rating_emojis.items())
+    emoji_reaction_text = " or ".join(
+        f"react with {emoji} {reason}" for emoji, reason in rating_emojis.items()
+    )
     emoji_reaction_text = emoji_reaction_text.capitalize() + "."
 
     @bot.event
     async def on_ready():
-       pretty_log(f"{bot.user} is ready and online!")
+        pretty_log(f"{bot.user} is ready and online!")
 
-    response_fmt = \
-    """{mention} asked: {question}
+    response_fmt = """{mention} asked: {question}
 
     Here's my best guess at an answer, with sources so you can follow up:
 
@@ -72,32 +71,34 @@ def main(auth, guilds, dev=False):
     # add our command
     @bot.slash_command(name="ask")
     @discord.option(
-    "question",
-    str,
-    description="A question about anything covered by FSDL."
+        "question", str, description="A question about anything covered by FSDL."
     )
     async def answer(ctx, question: str):
         """Answers questions about FSDL material."""
 
         respondent = ctx.author
 
-        pretty_log(f"responding to question \"{question}\"")
+        pretty_log(f'responding to question "{question}"')
         await ctx.defer(ephemeral=False, invisible=False)
         original_message = await ctx.interaction.original_response()
         message_id = original_message.id
         answer = await runner(question, request_id=message_id)
         answer.strip()
-        await ctx.respond(response_fmt.format(mention=respondent.mention, question=question, answer=answer))  # respond
+        await ctx.respond(
+            response_fmt.format(
+                mention=respondent.mention, question=question, answer=answer
+            )
+        )  # respond
         for emoji in rating_emojis:
             await original_message.add_reaction(emoji)
             await asyncio.sleep(0.25)
 
-
     if dev:
+
         @bot.slash_command()
         async def health(ctx):
             "Supports a Discord bot version of a liveness probe."
-            pretty_log(f"inside healthcheck")
+            pretty_log("inside healthcheck")
             await ctx.respond("200 more like 💯 mirite")
 
     bot.run(auth)
@@ -108,6 +109,10 @@ def make_argparser():
     parser.add_argument("--dev", action="store_true", help="Run in development mode.")
 
     return parser
+
+
+def pretty_log(str):
+    print(f"{START}🤖: {str}{END}")
 
 
 if __name__ == "__main__":
