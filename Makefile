@@ -1,7 +1,7 @@
 ifneq (,$(wildcard ./.env))
     include .env
 	# assume includes MODAL_TOKEN_ID and MODAL_TOKEN_SECRET for modal auth,
-	# assume includes MODAL_USER_NAME and DISCORD_AUTH for running discord bot
+	# assume includes DISCORD_AUTH for running discord bot,
 	# assume includes MONGODB_URI and MONGODB_PASSWORD for document store setup
     export
 endif
@@ -13,15 +13,15 @@ help: ## get a list of all the targets, and their short descriptions
 	@# source for the incantation: https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | awk 'BEGIN {FS = ":.*?##"}; {printf "\033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-discord_bot: environment ## run the Discord bot frontend locally
+discord_bot: environment ## run the Discord bot server locally
 	@echo "###"
 	@echo "# 🥞: Assumes you've set up your bot and deployed the backend on Modal"
 	@echo "###"
 	python run_bot.py
 
-deploy_backend: modal_auth ## deploy the Q&A backend on Modal
+backend: modal_auth ## deploy the Q&A backend on Modal
 	@echo "###"
-	@echo "# 🥞: Assumes you've set up the vector storage"
+	@echo "# 🥞: Assumes you've set up the vector index"
 	@echo "###"
 	modal deploy app.py
 	@echo "###"
@@ -34,15 +34,7 @@ cli_query: modal_auth ## run a query via a CLI interface
 	@echo "###"
 	modal run app.py::stub.cli --query "${QUERY}"
 
-document_storage: dev_environment ## runs the corpus generation notebook locally
-	@echo "###"
-	@echo "# 🥞: Assumes you've created a Mongo database with name fsdl first"
-	@echo "###"
-	@echo "###"
-	@echo "# 🥞: TODO
-	@echo "###"
-
-vector_storage: modal_auth ## updates a Pinecone vector store to contain embeddings of the document corpus
+vector_index: modal_auth ## updates a Pinecone vector store to contain embeddings of the document corpus
 	@echo "###"
 	@echo "# 🥞: Assumes you've set up the document storage"
 	@echo "###"
@@ -66,5 +58,5 @@ modal_token: environment ## creates token ID and secret for authentication with 
 environment: ## installs required environment for deployment
 	pip install -qqq -r requirements.txt
 
-dev_environment:  ## installs required environment for document corpus generation
+dev_environment:  ## installs required environment for development & document corpus generation
 	pip install -qqq -r requirements-dev.txt

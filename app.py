@@ -1,10 +1,11 @@
 """Builds a CLI, Webhook, and Gradio app for Q&A on the FSDL corpus.
 
 For details on corpus construction, see the accompanying notebook."""
-from pathlib import Path
-
 from fastapi import FastAPI
 import modal
+
+import vecstore
+from utils import pretty_log
 
 # definition of our container image for jobs on Modal
 # Modal gets really powerful when you start using multiple images!
@@ -19,7 +20,7 @@ image = modal.Image.debian_slim(  # we start from a lightweight linux distro
     # tokenizer for OpenAI models
     "faiss-cpu",
     # vector storage and similarity search
-    "pymongo==3.11",
+    "pymongo[srv]==3.11",
     # python client for MongoDB, our data persistence solution
     "gradio~=3.17",
     # simple web UIs in Python, from 🤗
@@ -38,16 +39,14 @@ stub = modal.Stub(
         modal.Secret.from_name("openai-api-key-fsdl"),
         modal.Secret.from_name("gantry-api-key"),
     ],
+    mounts=[
+        # we make our local modules available to the container
+        *modal.create_package_mounts(module_names=["vecstore", "docstore", "utils"])
+    ],
 )
 
-VECTOR_INDEX_NAME = "openai-ada-fsdl"
-VECTOR_DIR = Path("/vectors")
+VECTOR_DIR = vecstore.VECTOR_DIR
 vector_storage = modal.SharedVolume().persist("vector-vol")
-
-MONGO_COLLECTION = "ask-fsdl-llm"
-
-# Terminal codes for pretty-printing.
-START, END = "\033[1;38;5;214m", "\033[0m"
 
 
 @stub.function(
@@ -79,18 +78,23 @@ def qanda_langchain(query: str, request_id=None, with_logging=False) -> str:
     from langchain.chains.qa_with_sources import load_qa_with_sources_chain
     from langchain.llms import OpenAI
 
-    embedding_engine = get_embedding_engine(allowed_special="all")
+    import vecstore
+
+    embedding_engine = vecstore.get_embedding_engine(allowed_special="all")
 
     pretty_log("connecting to vector storage")
-    vector_index = connect_to_vector_index(VECTOR_INDEX_NAME, embedding_engine)
+    vector_index = vecstore.connect_to_vector_index(
+        vecstore.INDEX_NAME, embedding_engine
+    )
     pretty_log("connected to vector storage")
 
     pretty_log(f"running on query: {query}")
     pretty_log("selecting sources by similarity to query")
     sources = vector_index.similarity_search(query, k=5)
 
-    pretty_log("SOURCES")
-    print(*[source.page_content for source in sources], sep="\n\n---\n\n")
+    if with_logging:
+        pretty_log("SOURCES")
+        print(*[source.page_content for source in sources], sep="\n\n---\n\n")
 
     pretty_log("running query against Q&A chain")
 
@@ -102,9 +106,8 @@ def qanda_langchain(query: str, request_id=None, with_logging=False) -> str:
     )
     answer = result["output_text"]
 
-    print(answer)
-
     if with_logging:
+        print(answer)
         pretty_log("logging results to gantry")
         record_key = log_event(query, sources, answer, request_id=request_id)
         pretty_log(f"logged to gantry with key {record_key}")
@@ -121,23 +124,24 @@ def qanda_langchain(query: str, request_id=None, with_logging=False) -> str:
 )
 def sync_vector_db_to_doc_db():
     """Syncs the vector index onto the document storage."""
+    import docstore
 
-    document_client = connect_to_doc_db()
+    document_client = docstore.connect()
     pretty_log("connected to document DB")
 
-    embedding_engine = get_embedding_engine(allowed_special="all")
+    embedding_engine = vecstore.get_embedding_engine(allowed_special="all")
 
-    docs = get_documents(document_client, "fsdl")
+    docs = docstore.get_documents(document_client, "fsdl")
 
     pretty_log("splitting into bite-size chunks")
     ids, texts, metadatas = prep_documents_for_vector_storage(docs)
 
-    pretty_log(f"sending to vector store {VECTOR_INDEX_NAME}")
-    vector_index = create_vector_index(
-        VECTOR_INDEX_NAME, embedding_engine, texts, metadatas
+    pretty_log(f"sending to vector store {vecstore.INDEX_NAME}")
+    vector_index = vecstore.create_vector_index(
+        vecstore.INDEX_NAME, embedding_engine, texts, metadatas
     )
-    vector_index.save_local(folder_path=VECTOR_DIR, index_name=VECTOR_INDEX_NAME)
-    pretty_log(f"vector store {VECTOR_INDEX_NAME} created")
+    vector_index.save_local(folder_path=VECTOR_DIR, index_name=vecstore.INDEX_NAME)
+    pretty_log(f"vector store {vecstore.INDEX_NAME} created")
 
 
 def log_event(query, sources, answer, request_id=None):
@@ -165,62 +169,6 @@ def log_event(query, sources, answer, request_id=None):
     return record_key
 
 
-def get_embedding_engine(model="text-embedding-ada-002", **kwargs):
-    """Retrieves the embedding engine."""
-    from langchain.embeddings import OpenAIEmbeddings
-
-    embedding_engine = OpenAIEmbeddings(model="text-embedding-ada-002", **kwargs)
-
-    return embedding_engine
-
-
-def connect_to_doc_db():
-    """Connects to a document database, here MongoDB."""
-    import os
-    import pymongo
-
-    mongodb_password = os.environ["MONGODB_PASSWORD"]
-    mongodb_uri = os.environ["MONGODB_URI"]
-    connection_string = f"mongodb+srv://fsdl:{mongodb_password}@{mongodb_uri}/?retryWrites=true&w=majority"
-    client = pymongo.MongoClient(connection_string)
-    return client
-
-
-def get_documents(client, db="fsdl", collection=MONGO_COLLECTION):
-    """Fetches a collection of documents from a document database."""
-    db = client.get_database(db)
-    collection = db.get_collection(collection)
-    docs = collection.find({"metadata.ignore": False})
-
-    return docs
-
-
-def create_vector_index(index_name, embedding_engine, documents, metadatas):
-    """Creates a vector index that offers similarity search."""
-    from langchain import FAISS
-
-    files = VECTOR_DIR.glob(f"{index_name}.*")
-    if files:
-        for file in files:
-            file.unlink()
-        pretty_log("existing index wiped")
-
-    index = FAISS.from_texts(
-        texts=documents, embedding=embedding_engine, metadatas=metadatas
-    )
-
-    return index
-
-
-def connect_to_vector_index(index_name, embedding_engine):
-    """Adds the texts and metadatas to the vector index."""
-    from langchain.vectorstores import FAISS
-
-    vector_index = FAISS.load_local(VECTOR_DIR, embedding_engine, index_name)
-
-    return vector_index
-
-
 def prep_documents_for_vector_storage(documents):
     """Prepare documents from document store for embedding and vector storage.
 
@@ -246,9 +194,14 @@ def prep_documents_for_vector_storage(documents):
     return ids, texts, metadatas
 
 
-@stub.function(image=image)
+@stub.function(
+    image=image,
+    shared_volumes={
+        str(VECTOR_DIR): vector_storage,
+    },
+)
 def cli(query: str):
-    answer = qanda_langchain(query)
+    answer = qanda_langchain(query, with_logging=False)
     pretty_log("🦜 ANSWER 🦜")
     print(answer)
 
@@ -308,7 +261,3 @@ def debug():
     import IPython
 
     IPython.embed()
-
-
-def pretty_log(str):
-    print(f"{START}🥞: {str}{END}")
