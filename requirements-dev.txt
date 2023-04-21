@@ -1,4 +1,7 @@
 -r requirements.txt
+black
+pre-commit
+ruff
 jupyter
 mistune
 pandas
