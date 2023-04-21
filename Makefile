@@ -34,13 +34,19 @@ cli_query: modal_auth ## run a query via a CLI interface
 	@echo "###"
 	modal run app.py::stub.cli --query "${QUERY}"
 
-vector_index: modal_auth ## updates a Pinecone vector store to contain embeddings of the document corpus
+vector_index: modal_auth ## sets up a FAISS vector index to the application
 	@echo "###"
 	@echo "# 🥞: Assumes you've set up the document storage"
 	@echo "###"
 	modal run app.py::stub.sync_vector_db_to_doc_db
 
-debugger: modal_auth ## starts a debugger in the terminal running on Modal's infra
+document_store: dev_environment ## updates a MongoDB document store to contain the document corpus
+	@echo "###"
+	@echo "# 🥞: Assumes you've set up a MongoDB cluster with a database named 'fsdl'"
+	@echo "###"
+	jupyter nbconvert --to notebook --execute "Building the FSDL Corpus.ipynb"
+
+debugger: modal_auth ## starts a debugger running in our container but accessible via the terminal
 	modal run app.py::stub.debug
 
 modal_auth: environment ## confirms authentication with Modal, using secrets from `.env` file
