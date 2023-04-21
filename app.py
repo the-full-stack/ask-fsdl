@@ -1,6 +1,8 @@
 """Builds a CLI, Webhook, and Gradio app for Q&A on the FSDL corpus.
 
 For details on corpus construction, see the accompanying notebook."""
+from pathlib import Path
+
 from fastapi import FastAPI
 import modal
 
@@ -9,19 +11,20 @@ import modal
 image = modal.Image.debian_slim(  # we start from a lightweight linux distro
     python_version="3.10"  # we add a recent Python version
 ).pip_install(  # and we install the following packages:
-    "langchain~=0.0.98",
+    "langchain~=0.0.145",
     # 🦜🔗: a framework for building apps with LLMs
     "openai~=0.26.3",
     # high-quality language models and cheap embeddings
     "tiktoken",
     # tokenizer for OpenAI models
+    "faiss-cpu",
+    # vector storage and similarity search
     "pymongo==3.11",
     # python client for MongoDB, our data persistence solution
     "gradio~=3.17",
     # simple web UIs in Python, from 🤗
     "gantry==0.5.6",
     # 🏗️: monitoring, observability, and continual improvement for ML systems
-    "pinecone-client",
 )
 
 # we define a Stub to hold all the pieces of our app
@@ -31,40 +34,38 @@ stub = modal.Stub(
     image=image,
     secrets=[
         # this is where we add API keys, passwords, and URLs, which are stored on Modal
-        modal.Secret.from_name("pinecone-api-key"),
-        modal.Secret.from_name("openai-api-key-fsdl"),
         modal.Secret.from_name("mongodb"),
+        modal.Secret.from_name("openai-api-key-fsdl"),
         modal.Secret.from_name("gantry-api-key"),
     ],
 )
 
-PINECONE_INDEX = "openai-ada-fsdl"
+VECTOR_INDEX_NAME = "openai-ada-fsdl"
+VECTOR_DIR = Path("/vectors")
+vector_storage = modal.SharedVolume().persist("vector-vol")
+
 MONGO_COLLECTION = "ask-fsdl-llm"
 
 # Terminal codes for pretty-printing.
 START, END = "\033[1;38;5;214m", "\033[0m"
 
 
-@stub.function(image=image, timeout=500)
-def sync_vector_db_to_doc_db():
-    """Syncs the vector storage onto the document storage."""
-
-    document_client = connect_to_doc_db()
-    pretty_log("connected to document DB")
-
-    embedding_engine = get_embedding_engine(allowed_special="all")
-
-    pretty_log("connecting to vector storage")
-    vector_index = get_vector_index(PINECONE_INDEX, embedding_engine, delete_all=True)
-    pretty_log("connected to vector storage")
-
-    docs = get_documents(document_client, "fsdl")
-
-    pretty_log("splitting into bite-size chunks")
-    ids, texts, metadatas = prep_documents_for_vector_storage(docs)
-
-    pretty_log(f"sending to vector store {PINECONE_INDEX}")
-    add_to_vector_storage(texts, metadatas, vector_index, ids=ids)
+@stub.function(
+    image=image,
+    shared_volumes={
+        str(VECTOR_DIR): vector_storage,
+    },
+)
+@modal.web_endpoint(method="GET", label="ask-fsdl-hook")
+def web(query: str, request_id=None):
+    """Exposes our Q&A chain for queries via a web endpoint."""
+    pretty_log(
+        f"handling request with client-provided id: {request_id}"
+    ) if request_id else None
+    answer = qanda_langchain(query, request_id=request_id, with_logging=True)
+    return {
+        "answer": answer,
+    }
 
 
 def qanda_langchain(query: str, request_id=None, with_logging=False) -> str:
@@ -81,7 +82,7 @@ def qanda_langchain(query: str, request_id=None, with_logging=False) -> str:
     embedding_engine = get_embedding_engine(allowed_special="all")
 
     pretty_log("connecting to vector storage")
-    vector_index = get_vector_index(PINECONE_INDEX, embedding_engine, delete_all=False)
+    vector_index = connect_to_vector_index(VECTOR_INDEX_NAME, embedding_engine)
     pretty_log("connected to vector storage")
 
     pretty_log(f"running on query: {query}")
@@ -93,7 +94,7 @@ def qanda_langchain(query: str, request_id=None, with_logging=False) -> str:
 
     pretty_log("running query against Q&A chain")
 
-    llm = OpenAI("text-davinci-003", temperature=0)
+    llm = OpenAI(model_name="text-davinci-003", temperature=0)
     chain = load_qa_with_sources_chain(llm, chain_type="stuff")
 
     result = chain(
@@ -111,7 +112,36 @@ def qanda_langchain(query: str, request_id=None, with_logging=False) -> str:
     return answer
 
 
+@stub.function(
+    image=image,
+    shared_volumes={
+        str(VECTOR_DIR): vector_storage,
+    },
+    cpu=8.0,  # use more cpu for vector storage creation
+)
+def sync_vector_db_to_doc_db():
+    """Syncs the vector index onto the document storage."""
+
+    document_client = connect_to_doc_db()
+    pretty_log("connected to document DB")
+
+    embedding_engine = get_embedding_engine(allowed_special="all")
+
+    docs = get_documents(document_client, "fsdl")
+
+    pretty_log("splitting into bite-size chunks")
+    ids, texts, metadatas = prep_documents_for_vector_storage(docs)
+
+    pretty_log(f"sending to vector store {VECTOR_INDEX_NAME}")
+    vector_index = create_vector_index(
+        VECTOR_INDEX_NAME, embedding_engine, texts, metadatas
+    )
+    vector_index.save_local(folder_path=VECTOR_DIR, index_name=VECTOR_INDEX_NAME)
+    pretty_log(f"vector store {VECTOR_INDEX_NAME} created")
+
+
 def log_event(query, sources, answer, request_id=None):
+    """Logs the event to Gantry."""
     import os
 
     import gantry
@@ -136,6 +166,7 @@ def log_event(query, sources, answer, request_id=None):
 
 
 def get_embedding_engine(model="text-embedding-ada-002", **kwargs):
+    """Retrieves the embedding engine."""
     from langchain.embeddings import OpenAIEmbeddings
 
     embedding_engine = OpenAIEmbeddings(model="text-embedding-ada-002", **kwargs)
@@ -144,6 +175,7 @@ def get_embedding_engine(model="text-embedding-ada-002", **kwargs):
 
 
 def connect_to_doc_db():
+    """Connects to a document database, here MongoDB."""
     import os
     import pymongo
 
@@ -163,39 +195,30 @@ def get_documents(client, db="fsdl", collection=MONGO_COLLECTION):
     return docs
 
 
-def get_vector_index(index_name, embedding_engine, delete_all=True):
-    """Returns a vector index that offers similarity search."""
-    import os
+def create_vector_index(index_name, embedding_engine, documents, metadatas):
+    """Creates a vector index that offers similarity search."""
+    from langchain import FAISS
 
-    import langchain
-    import pinecone
+    files = VECTOR_DIR.glob(f"{index_name}.*")
+    if files:
+        for file in files:
+            file.unlink()
+        pretty_log("existing index wiped")
 
-    pinecone_api_key = os.environ["PINECONE_API_KEY"]
-    pinecone.init(api_key=pinecone_api_key, environment="us-east1-gcp")
-
-    # use pinecone SDK to connect to an index or create a new one if it doesn't exist
-    try:
-        index = pinecone.Index(PINECONE_INDEX)
-        if delete_all:  # optionally, wipe it clean
-            index.delete(delete_all=True)
-            pretty_log("existing index wiped")
-    except pinecone.core.client.exceptions.NotFoundException:
-        pretty_log("creating vector index")
-        pinecone.create_index(
-            name=PINECONE_INDEX, dimension=1536, metric="cosine", pod_type="p1.x1"
-        )
-        pretty_log("vector index created")
-
-    # now, wrap that index in LangChain vector store
-    index = langchain.vectorstores.Pinecone.from_existing_index(
-        index_name=index_name, embedding=embedding_engine
+    index = FAISS.from_texts(
+        texts=documents, embedding=embedding_engine, metadatas=metadatas
     )
 
     return index
 
 
-def add_to_vector_storage(texts, metadatas, vector_index, **kwargs):
-    vector_index.add_texts(texts, metadatas=metadatas, **kwargs)
+def connect_to_vector_index(index_name, embedding_engine):
+    """Adds the texts and metadatas to the vector index."""
+    from langchain.vectorstores import FAISS
+
+    vector_index = FAISS.load_local(VECTOR_DIR, embedding_engine, index_name)
+
+    return vector_index
 
 
 def prep_documents_for_vector_storage(documents):
@@ -203,7 +226,8 @@ def prep_documents_for_vector_storage(documents):
 
     Documents are split into chunks so that they can be used with sourced Q&A.
 
-    documents: A list of LangChain.Documents with text, metadata, and a hash ID.
+    Arguments:
+        documents: A list of LangChain.Documents with text, metadata, and a hash ID.
     """
     from langchain.text_splitter import RecursiveCharacterTextSplitter
 
@@ -223,18 +247,6 @@ def prep_documents_for_vector_storage(documents):
 
 
 @stub.function(image=image)
-@modal.web_endpoint(method="GET", label="ask-fsdl-hook")
-def web(query: str, request_id=None):
-    pretty_log(
-        f"handling request with client-provided id: {request_id}"
-    ) if request_id else None
-    answer = qanda_langchain(query, request_id=request_id, with_logging=True)
-    return {
-        "answer": answer,
-    }
-
-
-@stub.function(image=image)
 def cli(query: str):
     answer = qanda_langchain(query)
     pretty_log("🦜 ANSWER 🦜")
@@ -249,10 +261,15 @@ async def root():
     return {"message": "Hello World"}
 
 
-# Wrap in a Gradio interface for debugging backend
-@stub.function(image=image)
+@stub.function(
+    image=image,
+    shared_volumes={
+        str(VECTOR_DIR): vector_storage,
+    },
+)
 @modal.asgi_app(label="ask-fsdl")
 def fastapi_app():
+    """A simple Gradio interface for debugging."""
     import gradio as gr
     from gradio.routes import mount_gradio_app
 
@@ -271,6 +288,7 @@ def fastapi_app():
             "What is PyTorch? How can I decide whether to choose it over TensorFlow?",
             "Is it cheaper to run experiments on cheap GPUs or expensive GPUs?",
             "How do I recruit an ML team?",
+            "What is the best way to learn about ML?",
         ],
         allow_flagging="never",
     )
@@ -278,9 +296,15 @@ def fastapi_app():
     return mount_gradio_app(app=web_app, blocks=interface, path="/gradio")
 
 
-# Add a debugging access point on Modal
-@stub.function(image=image, interactive=True)
+@stub.function(
+    image=image,
+    interactive=True,
+    shared_volumes={
+        str(VECTOR_DIR): vector_storage,
+    },
+)
 def debug():
+    """Convenient debugging access to Modal."""
     import IPython
 
     IPython.embed()
