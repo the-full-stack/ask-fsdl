@@ -3,6 +3,7 @@ documents.json
 .env
 
 .ipynb_checkpoints/
+*.nbconvert.ipynb
 __pycache__
 
 .vscode
