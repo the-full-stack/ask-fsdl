@@ -1,8 +1,8 @@
 """Builds a CLI, Webhook, and Gradio app for Q&A on the FSDL corpus.
 
 For details on corpus construction, see the accompanying notebook."""
-from fastapi import FastAPI
 import modal
+from fastapi import FastAPI
 
 import vecstore
 from utils import pretty_log
