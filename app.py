@@ -255,6 +255,7 @@ def fastapi_app():
     shared_volumes={
         str(VECTOR_DIR): vector_storage,
     },
+    timeout=3600,
 )
 def debug():
     """Convenient debugging access to Modal."""
