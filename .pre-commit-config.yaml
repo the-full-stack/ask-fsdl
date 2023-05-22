@@ -15,6 +15,7 @@ repos:
       - id: debug-statements # check for python debug statements (import pdb, breakpoint, etc.)
       - id: detect-private-key # checks for private keys (BEGIN X PRIVATE KEY, etc.)
       - id: pretty-format-json # cleaner json files
+        args: ["--autofix"] # automatically
 
   # black for python autoformatting
   - repo: https://github.com/psf/black
