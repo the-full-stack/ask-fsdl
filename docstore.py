@@ -1,7 +1,8 @@
-MONGO_COLLECTION = "ask-fsdl-llm"
+MONGO_DATABASE = "fsdl"
+MONGO_COLLECTION = "ask-fsdl"
 
 
-def get_documents(client, db="fsdl", collection=MONGO_COLLECTION):
+def get_documents(client, db=MONGO_DATABASE, collection=MONGO_COLLECTION):
     """Fetches a collection of documents from a document database."""
     db = client.get_database(db)
     collection = db.get_collection(collection)
@@ -27,6 +28,6 @@ def connect():
 def flush():
     client = connect()
 
-    db = client.get_database("fsdl")
+    db = client.get_database(MONGO_DATABASE)
     collection = db.get_collection(MONGO_COLLECTION)
     collection.drop()
