@@ -1,0 +1,106 @@
+[
+  {
+    "id": "-Iob-FW5jVM",
+    "title": "Lecture 01: When to Use ML and Course Vision (FSDL 2022)"
+  },
+  {
+    "id": "hltjXcaxExY",
+    "title": "Lab Intro and Overview"
+  },
+  {
+    "id": "9w8CVuHUk8U",
+    "title": "Lab 01: Neural networks in PyTorch"
+  },
+  {
+    "id": "6fSd8RdtDBs",
+    "title": "Lab 02: PyTorch Lightning and Convolutional NNs"
+  },
+  {
+    "id": "lsWLgQyaeik",
+    "title": "Lab 03: Transformers and Paragraphs (FSDL 2022)"
+  },
+  {
+    "id": "BPYOsDCZbno",
+    "title": "Lecture 02: Development Infrastructure & Tooling (FSDL 2022)"
+  },
+  {
+    "id": "NEGDJuINE9E",
+    "title": "Lab 04: Experiment Management (FSDL 2022)"
+  },
+  {
+    "id": "RLemHNAO5Lw",
+    "title": "Lecture 03: Troubleshooting & Testing (FSDL 2022)"
+  },
+  {
+    "id": "D65SlCSoS-0",
+    "title": "Lab 05: Troubleshooting & Testing (FSDL 2022)"
+  },
+  {
+    "id": "Jlm4oqW41vY",
+    "title": "Lecture 04: Data Management (FSDL 2022)"
+  },
+  {
+    "id": "zoS5Fx2Ou1Y",
+    "title": "Lab 06: Data Annotation (FSDL 2022)"
+  },
+  {
+    "id": "W3hKjXg7fXM",
+    "title": "Lecture 05: Deployment (FSDL 2022)"
+  },
+  {
+    "id": "2j6rG-4zS6w",
+    "title": "Lab 07: Web Deployment (FSDL 2022)"
+  },
+  {
+    "id": "nra0Tt3a-Oc",
+    "title": "Lecture 06: Continual Learning (FSDL 2022)"
+  },
+  {
+    "id": "-mKzxSC0r7w",
+    "title": "Lab 08: Monitoring (FSDL 2022)"
+  },
+  {
+    "id": "Rm11UeGwGgk",
+    "title": "Lecture 07: Foundation Models (FSDL 2022)"
+  },
+  {
+    "id": "a54xH6nT4Sw",
+    "title": "Lecture 08: ML Teams and Project Management (FSDL 2022)"
+  },
+  {
+    "id": "7FQpbYTqjAA",
+    "title": "Lecture 09: Ethics (FSDL 2022)"
+  },
+  {
+    "id": "twHxmU9OxDU",
+    "title": "Launch an LLM App in One Hour (LLM Bootcamp)"
+  },
+  {
+    "id": "MyFrMFab6bo",
+    "title": "LLM Foundations (LLM Bootcamp)"
+  },
+  {
+    "id": "JnBHR_yL2w8",
+    "title": "Learn to Spell: Prompt Engineering (LLM Bootcamp)"
+  },
+  {
+    "id": "YdeuQhlHmCA",
+    "title": "Augmented Language Models (LLM Bootcamp)"
+  },
+  {
+    "id": "pUKs4xM1r5U",
+    "title": "Project Walkthrough: askFSDL (LLM Bootcamp)"
+  },
+  {
+    "id": "l5mG4z343qg",
+    "title": "UX for Language User Interfaces (LLM Bootcamp)"
+  },
+  {
+    "id": "Fquj2u7ay40",
+    "title": "LLMOps (LLM Bootcamp)"
+  },
+  {
+    "id": "ax_R4yz1WwM",
+    "title": "What's Next? (LLM Bootcamp)"
+  }
+]
