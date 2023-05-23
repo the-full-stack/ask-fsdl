@@ -22,7 +22,7 @@ stub = modal.Stub(
 
 
 @stub.local_entrypoint()
-def main(json_path="papers.json"):
+def main(json_path="data/papers.json"):
     """Calls the ETL pipeline using a JSON file with PDF metadata.
 
     modal run etl.py --json-path /path/to/json
@@ -79,6 +79,7 @@ def add_to_document_db(all_pages_jsons):
     for pages_json in all_pages_jsons:
         pages = [Document.parse_raw(page) for page in pages_json]
         if len(pages) >= 75:
+            # TODO: move this earlier in the processing, keep first 75 pages
             continue
         all_pages += pages
 

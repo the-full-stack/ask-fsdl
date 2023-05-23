@@ -10,3 +10,4 @@ pymongo[srv]
 smart-open
 srt
 youtube-transcript-api
+# TODO: remove old ETL requirements
