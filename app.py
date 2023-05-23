@@ -144,6 +144,14 @@ def sync_vector_db_to_doc_db():
     pretty_log(f"vector store {vecstore.INDEX_NAME} created")
 
 
+@stub.function(image=image)
+def flush_doc_db():
+    """Empties the document storage."""
+    import docstore
+
+    docstore.flush()
+
+
 def log_event(query, sources, answer, request_id=None):
     """Logs the event to Gantry."""
     import os
