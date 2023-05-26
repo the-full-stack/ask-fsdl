@@ -1,11 +1,10 @@
 import modal
 
-# definition of our container image and app for deployment on Modal
-# see app.py for more details
-image = modal.Image.debian_slim(python_version="3.10").pip_install(
-    "langchain~=0.0.98",
+import etl.shared
+
+# extend the shared image with PDF-handling dependencies
+image = etl.shared.image.pip_install(
     "pypdf~=3.8",
-    "pymongo[srv]==3.11",
 )
 
 stub = modal.Stub(
@@ -22,10 +21,10 @@ stub = modal.Stub(
 
 
 @stub.local_entrypoint()
-def main(json_path="data/papers.json"):
+def main(json_path="data/llm-papers.json"):
     """Calls the ETL pipeline using a JSON file with PDF metadata.
 
-    modal run etl.py --json-path /path/to/json
+    modal run etl/pdfs.py --json-path /path/to/json
     """
     import json
 
@@ -33,17 +32,17 @@ def main(json_path="data/papers.json"):
         pdf_infos = json.load(f)
 
     pdf_urls = [pdf["url"] for pdf in pdf_infos]
+    pdf_urls = pdf_urls[:1]
 
-    results = list(extract_pdf.map(pdf_urls, return_exceptions=True))
-    add_to_document_db.call(results)
+    raw_documents = etl.shared.unchunk(
+        extract_pdf.map(pdf_urls, return_exceptions=True)
+    )
 
+    documents = [json.loads(doc) for doc in raw_documents]
 
-@stub.function(image=image)
-def flush_doc_db():
-    """Empties the document database."""
-    import docstore
-
-    docstore.flush()
+    with etl.shared.stub.run():
+        chunked_documents = etl.shared.chunk_into(documents, 10)
+        list(etl.shared.add_to_document_db.map(chunked_documents))
 
 
 @stub.function(image=image)
@@ -60,42 +59,6 @@ def extract_pdf(pdf_url):
     pages = enrich_metadata(pages)
 
     return [page.json() for page in pages]
-
-
-@stub.function(image=image)
-def add_to_document_db(all_pages_jsons):
-    """Adds a collection of documents to a document database."""
-    from langchain.docstore.document import Document
-    from pymongo import InsertOne
-
-    import docstore
-
-    client = docstore.connect()
-
-    db = client.get_database("fsdl")
-    collection = db.get_collection(docstore.MONGO_COLLECTION)
-
-    all_pages = []
-    for pages_json in all_pages_jsons:
-        pages = [Document.parse_raw(page) for page in pages_json]
-        if len(pages) >= 75:
-            # TODO: move this earlier in the processing, keep first 75 pages
-            continue
-        all_pages += pages
-
-    requesting, CHUNK_SIZE = [], 250
-
-    for page in all_pages:
-        metadata = page.metadata
-        document = {"text": page.page_content, "metadata": metadata}
-        requesting.append(InsertOne(document))
-
-        if len(requesting) >= CHUNK_SIZE:
-            collection.bulk_write(requesting)
-            requesting = []
-
-    if requesting:
-        collection.bulk_write(requesting)
 
 
 def annotate_endmatter(pages, min_pages=6):

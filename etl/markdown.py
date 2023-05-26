@@ -1,12 +1,12 @@
 import modal
 
-# definition of our container image and app for deployment on Modal
-# see app.py for more details
-image = modal.Image.debian_slim(python_version="3.10").pip_install(
-    "langchain~=0.0.98",
+import etl.shared
+
+# extend the shared image with markdown-handling dependencies
+image = etl.shared.image.pip_install(
     "mistune",
     "python-slugify",
-    "pymongo[srv]==3.11",
+    "smart-open",
 )
 
 stub = modal.Stub(
@@ -22,8 +22,9 @@ stub = modal.Stub(
 )
 
 
+# run coordinating code locally, with heavy-duty processing in the cloud
 @stub.local_entrypoint()
-def main(json_path="data/markdown.json"):
+def main(json_path="data/lectures-2022.json"):
     """Calls the ETL pipeline using a JSON file with markdown file metadata.
 
     modal run etl/markdown.py --json-path /path/to/json
@@ -40,18 +41,19 @@ def main(json_path="data/markdown.json"):
 
     lectures = markdown_corpus["lectures"]
 
-    documents = [  # each lecture creates multiple documents, so we flatten
-        document
-        for lecture_documents in to_documents.map(
-            lectures, kwargs={"website_url": website_url, "md_url": md_url}
+    documents = (
+        etl.shared.unchunk(  # each lecture creates multiple documents, so we flatten
+            to_documents.map(
+                lectures,
+                kwargs={"website_url": website_url, "md_url": md_url},
+                return_exceptions=True,
+            )
         )
-        for document in lecture_documents
-    ]
+    )
 
-    # split up documents into 10 batches to reduce number of connections
-    add_to_document_db.map(chunk_into(documents, n_chunks=10))
-
-    return documents
+    with etl.shared.stub.run():
+        chunked_documents = etl.shared.chunk_into(documents, 10)
+        list(etl.shared.add_to_document_db.map(chunked_documents))
 
 
 @stub.function(image=image)
@@ -113,38 +115,6 @@ def get_target_headings_and_slugs(text):
     return target_headings, heading_slugs
 
 
-# TODO: unify across ETLs
-@stub.function(image=image)
-def add_to_document_db(documents_json):
-    """Adds a collection of json documents to a document database."""
-    from pymongo import InsertOne
-
-    import docstore
-
-    client = docstore.connect()
-
-    db = client.get_database(docstore.MONGO_DATABASE)
-    collection = db.get_collection(docstore.MONGO_COLLECTION)
-
-    requesting, CHUNK_SIZE = [], 250
-
-    for document in documents_json:
-        requesting.append(InsertOne(document))
-
-        if len(requesting) >= CHUNK_SIZE:
-            collection.bulk_write(requesting)
-            requesting = []
-
-    if requesting:
-        collection.bulk_write(requesting)
-
-
-def chunk_into(list, n_chunks):
-    """Splits list into n_chunks pieces, non-contiguously."""
-    for ii in range(0, n_chunks):
-        yield list[ii::n_chunks]
-
-
 def split_by_headings(text, headings):
     """Separate Markdown text by level-1 headings."""
     texts = []
@@ -156,6 +126,7 @@ def split_by_headings(text, headings):
     return texts
 
 
+# TODO: unify across ETLs
 def enrich_metadata(pages):
     """Add our metadata: sha256 hash and ignore flag."""
     import hashlib
