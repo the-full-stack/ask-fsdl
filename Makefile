@@ -40,6 +40,7 @@ vector_index: modal_auth ## sets up a FAISS vector index to the application
 	@echo "###"
 	modal run app.py::stub.sync_vector_db_to_doc_db
 
+# TODO: rewrite this target
 document_store: dev_environment ## updates a MongoDB document store to contain the document corpus
 	@echo "###"
 	@echo "# 🥞: Assumes you've set up a MongoDB cluster with a database named 'fsdl'"
