@@ -1,6 +1,6 @@
 """Resource definition for the bot application."""
 # TODO: AWS secrets/config setup
-
+# TODO: handle keygen with aws.ec2.KeyPair
 import pulumi
 import pulumi_aws as aws
 
@@ -62,7 +62,7 @@ def build_startup_script():
     script += "sudo yum update -y\n"  # update yum, package manager for amazon linux
     script += "sudo yum install -y git\n"  # install git for cloning the repo
     script += "sudo amazon-linux-extras install -y python3.8\n"  # install recent python
-    script += "cd ~"
+    script += "cd /home/ec2-user\n"
     script += f"git clone -b {GIT_BRANCH} {GIT_URI}\n"  # clone the repo
     script += "cd ask-fsdl\n"  # change directory into the repo
     script += f"""echo "{config_as_env()}" >> .env\n"""  # write the config file
@@ -80,7 +80,7 @@ instance = aws.ec2.Instance(
     "bot-server",
     instance_type="t2.micro",
     ami="ami-0ceecbb0f30a902a6",
-    key_name="fsdl-webserver-keys",  # TODO: handle keygen with aws.ec2.KeyPair
+    key_name="fsdl-webserver-keys",
     user_data=build_startup_script(),
     user_data_replace_on_change=True,  # reprovision if user_data changes
     vpc_security_group_ids=[security_group.id],
