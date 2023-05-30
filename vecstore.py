@@ -1,3 +1,4 @@
+"""Utilities for creating and using vector indexes."""
 from pathlib import Path
 
 from utils import pretty_log

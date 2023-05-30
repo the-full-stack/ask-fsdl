@@ -1,3 +1,4 @@
+"""Functions to connect to a document database and fetch documents from it."""
 MONGO_DATABASE = "fsdl"
 MONGO_COLLECTION = "ask-fsdl"
 

@@ -1,3 +1,6 @@
+"""Some simple utilities for the project."""
+
+
 def pretty_log(str):
     print(f"{START}🥞: {str}{END}")
 
