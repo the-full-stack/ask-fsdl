@@ -1,3 +1,5 @@
+# provide ENV=dev to use .env.dev instead of .env
+# and to work in the Pulumi dev stack
 ENV_LOADED :=
 ifeq ($(ENV), dev)
     ifneq (,$(wildcard ./.env.dev))
@@ -31,7 +33,7 @@ frontend: environment pulumi-config ## deploy the Discord bot server on AWS
 	@echo "# 🥞: Allow 1-3 minutes for bot to start up"
 	@echo "###"
 	# for startup debug logs, run sudo cat /var/log/cloud-init-output.log on the instance
-	# for server logs, run tail -f /home/ec2-user/ask-fsdl/bot/log.out the instance
+	# for server logs, run tail -f /home/ec2-user/ask-fsdl/bot/log.out on the instance
 
 local-frontend: environment ## run the Discord bot server locally
 	@echo "###"
