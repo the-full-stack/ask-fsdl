@@ -1,8 +1,0 @@
-config:
-  ask-fsdl:DISCORD_AUTH:
-    secure: AAABAA3GoihOHqFBVr2lPnOocvHonS2GJDMmCX81fIn9nwPp9wcgJJkOIkerab9ZgK7d+DG5oBrHGtKEVbqEzG2LTKWAXgZGbO0W11KN1EaG0kuO6DdLazJ2SZcHEI5wj6foImRlzSA=
-  ask-fsdl:DISCORD_GUILD_ID: "1070516629328363591"
-  ask-fsdl:DISCORD_MAINTAINER_ID:
-    secure: AAABAKKwJFbBGhuqDCXWoh900P08mQNn2W6rvNWMQNkAR+s/SnG6FV/ibpT3VhY8G/c=
-  ask-fsdl:MODAL_USER_NAME: charlesfrye
-  aws:region: us-west-2

@@ -1,7 +1,0 @@
-config:
-  ask-fsdl:DISCORD_AUTH:
-    secure: AAABAEk39/bvayeF6ZOBQASsv/ETDGLQfjcogN5cgPWWr4xtJAUQ3OMrOxUic8N/co2WJvnci76uDzSc7EXycOXTniPF0qDrQWl8moYhnEcXK0qRe9ruWPE+PFzTmzfmoqMBA2nLaZE=
-  ask-fsdl:DISCORD_GUILD_ID: "984525101678612540"
-  ask-fsdl:DISCORD_MAINTAINER_ID:
-    secure: AAABAC9Re5+W0fN5KdviJAHQhJjpWX458LoKzBBDbGBrW62L3a75+kaFyC8qQIYGXMM=
-  ask-fsdl:MODAL_USER_NAME: charlesfrye
