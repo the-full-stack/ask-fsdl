@@ -20,13 +20,18 @@ help: ## get a list of all the targets, and their short descriptions
 	@# source for the incantation: https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | awk 'BEGIN {FS = ":.*?##"}; {printf "\033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-it-all: environment secrets document-store vector-index backend discord-bot ## runs all automated steps to get the application up and running
+it-all: environment secrets document-store vector-index backend frontend ## runs all automated steps to get the application up and running
 
 frontend: environment pulumi-config ## deploy the Discord bot server on AWS
 	@echo "###"
 	@echo "# 🥞: Assumes you've set up your bot in Discord, see https://discordpy.readthedocs.io/en/stable/discord.html"
 	@echo "###"
 	pulumi -C bot/ up --yes
+	@echo "###"
+	@echo "# 🥞: Allow 1-3 minutes for bot to start up"
+	@echo "###"
+	# for startup debug logs, run sudo cat /var/log/cloud-init-output.log on the instance
+	# for server logs, run tail -f /home/ec2-user/ask-fsdl/bot/log.out the instance
 
 local-frontend: environment ## run the Discord bot server locally
 	@echo "###"
@@ -67,16 +72,6 @@ document-store: environment secrets ## creates a MongoDB collection that contain
 debugger: modal-auth ## starts a debugger running in our container but accessible via the terminal
 	modal run app.py::stub.debug
 
-modal-auth: environment ## confirms authentication with Modal, using secrets from `.env` file
-	@echo "###"
-	@echo "# 🥞: If you haven't gotten a Modal token yet, run make modal-token"
-	@echo "###"
-	@$(if $(value MODAL_TOKEN_ID),, \
-		$(error MODAL_TOKEN_ID is not set. Please set it before running this target.))
-	@$(if $(value MODAL_TOKEN_SECRET),, \
-		$(error MODAL_TOKEN_SECRET is not set. Please set it before running this target.))
-	@modal token set --token-id $(MODAL_TOKEN_ID) --token-secret $(MODAL_TOKEN_SECRET)
-
 secrets: modal-auth  ## pushes secrets from .env to Modal
 	@$(if $(value OPENAI_API_KEY),, \
 		$(error OPENAI_API_KEY is not set. Please set it before running this target.))
@@ -88,6 +83,22 @@ secrets: modal-auth  ## pushes secrets from .env to Modal
 		$(error MONGODB_PASSWORD is not set. Please set it before running this target.))
 	@modal secret create mongodb-fsdl MONGODB_USER=$(MONGODB_USER) MONGODB_URI=$(MONGODB_URI) MONGODB_PASSWORD=$(MONGODB_PASSWORD)
 	@modal secret create openai-api-key-fsdl OPENAI_API_KEY=$(OPENAI_API_KEY)
+
+modal-auth: environment ## confirms authentication with Modal, using secrets from `.env` file
+	@echo "###"
+	@echo "# 🥞: If you haven't gotten a Modal token yet, run make modal-token"
+	@echo "###"
+	@$(if $(value MODAL_TOKEN_ID),, \
+		$(error MODAL_TOKEN_ID is not set. Please set it before running this target.))
+	@$(if $(value MODAL_TOKEN_SECRET),, \
+		$(error MODAL_TOKEN_SECRET is not set. Please set it before running this target.))
+	@modal token set --token-id $(MODAL_TOKEN_ID) --token-secret $(MODAL_TOKEN_SECRET)
+
+modal-token: environment ## creates token ID and secret for authentication with modal
+	modal token new
+	@echo "###"
+	@echo "# 🥞: Copy the token info from the file mentioned above into .env"
+	@echo "###"
 
 pulumi-config:  ## adds secrets and config from env file to Pulumi
 	@$(if $(value MODAL_USER_NAME),, \
@@ -101,12 +112,6 @@ pulumi-config:  ## adds secrets and config from env file to Pulumi
 	@pulumi -C bot/ config set DISCORD_GUILD_ID $(DISCORD_GUILD_ID)
 	@$(if $(value DISCORD_MAINTAINER_ID),pulumi -C bot/ config set --secret DISCORD_MAINTAINER_ID $(DISCORD_MAINTAINER_ID),)
 	pulumi -C bot/ config
-
-modal-token: environment ## creates token ID and secret for authentication with modal
-	modal token new
-	@echo "###"
-	@echo "# 🥞: Copy the token info from the file mentioned above into .env"
-	@echo "###"
 
 environment: ## installs required environment for deployment and corpus generation
 	@if [ -z "$(ENV_LOADED)" ]; then \
