@@ -13,7 +13,7 @@ stub = modal.Stub(
     name="etl-markdown",
     image=image,
     secrets=[
-        modal.Secret.from_name("mongodb"),
+        modal.Secret.from_name("mongodb-fsdl"),
     ],
     mounts=[
         # we make our local modules available to the container
@@ -88,6 +88,7 @@ def get_text_from(url):
 
     with open(url) as f:
         contents = f.read()
+
     return contents
 
 
@@ -124,16 +125,3 @@ def split_by_headings(text, headings):
     texts.append(text)
     texts = list(reversed(texts))
     return texts
-
-
-# TODO: unify across ETLs
-def enrich_metadata(pages):
-    """Add our metadata: sha256 hash and ignore flag."""
-    import hashlib
-
-    for page in pages:
-        m = hashlib.sha256()
-        m.update(page.page_content.encode("utf-8"))
-        page.metadata["sha256"] = m.hexdigest()
-        page.metadata["ignore"] = False
-    return pages

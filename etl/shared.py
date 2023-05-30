@@ -10,7 +10,7 @@ image = modal.Image.debian_slim(python_version="3.10").pip_install(
 stub = modal.Stub(
     name="etl-shared",
     secrets=[
-        modal.Secret.from_name("mongodb"),
+        modal.Secret.from_name("mongodb-fsdl"),
     ],
     mounts=[*modal.create_package_mounts(module_names=["docstore", "utils"])],
 )
@@ -80,6 +80,21 @@ def query_one_document_db(query, projection=None, db=None, collection=None):
     )
 
     return collection.find_one(query, projection)
+
+
+def enrich_metadata(pages):
+    """Add our metadata: sha256 hash and ignore flag."""
+    import hashlib
+
+    for page in pages:
+        m = hashlib.sha256()
+        m.update(page["text"].encode("utf-8"))
+        page["metadata"]["sha256"] = m.hexdigest()
+        if page["metadata"].get("is_endmatter"):
+            page["metadata"]["ignore"] = True
+        else:
+            page["metadata"]["ignore"] = False
+    return pages
 
 
 def chunk_into(list, n_chunks):

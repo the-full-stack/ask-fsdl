@@ -11,7 +11,7 @@ stub = modal.Stub(
     name="etl-pdfs",
     image=image,
     secrets=[
-        modal.Secret.from_name("mongodb"),
+        modal.Secret.from_name("mongodb-fsdl"),
     ],
     mounts=[
         # we make our local modules available to the container
@@ -34,11 +34,7 @@ def main(json_path="data/llm-papers.json"):
     pdf_urls = [pdf["url"] for pdf in pdf_infos]
     pdf_urls = pdf_urls[:1]
 
-    raw_documents = etl.shared.unchunk(
-        extract_pdf.map(pdf_urls, return_exceptions=True)
-    )
-
-    documents = [json.loads(doc) for doc in raw_documents]
+    documents = etl.shared.unchunk(extract_pdf.map(pdf_urls, return_exceptions=True))
 
     with etl.shared.stub.run():
         chunked_documents = etl.shared.chunk_into(documents, 10)
@@ -47,43 +43,32 @@ def main(json_path="data/llm-papers.json"):
 
 @stub.function(image=image)
 def extract_pdf(pdf_url):
-    """Creates a LangChain document for a PDF and serializes it to JSON."""
+    """Extracts the text from a PDF."""
     from langchain.document_loaders import PyPDFLoader
 
     loader = PyPDFLoader(pdf_url)
-    pages = loader.load_and_split()
+    documents = loader.load_and_split()
+    documents = [document.dict() for document in documents]
+    for document in documents:  # rename page_content to text
+        document["text"] = document["page_content"]
+        document.pop("page_content")
 
-    for page in pages:
-        page.metadata["source"] = pdf_url
+    documents = annotate_endmatter(documents)
+    for document in documents:
+        document["metadata"]["source"] = pdf_url
 
-    pages = enrich_metadata(pages)
+    document = etl.shared.enrich_metadata(documents)
 
-    return [page.json() for page in pages]
+    return documents
 
 
 def annotate_endmatter(pages, min_pages=6):
-    """Heuristic for detecting reference sections.""" ""
+    """Heuristic for detecting reference sections."""
     out, after_references = [], False
     for idx, page in enumerate(pages):
-        content = page.page_content.lower()
+        content = page["text"].lower()
         if idx >= min_pages and ("references" in content or "bibliography" in content):
             after_references = True
-        page.metadata["is_endmatter"] = after_references
+        page["metadata"]["is_endmatter"] = after_references
         out.append(page)
     return out
-
-
-def enrich_metadata(pages):
-    """Add our metadata: sha256 hash and ignore flag."""
-    import hashlib
-
-    pages = annotate_endmatter(pages)
-    for page in pages:
-        m = hashlib.sha256()
-        m.update(page.page_content.encode("utf-8"))
-        page.metadata["sha256"] = m.hexdigest()
-        if page.metadata.get("is_endmatter"):
-            page.metadata["ignore"] = True
-        else:
-            page.metadata["ignore"] = False
-    return pages
