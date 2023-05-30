@@ -1,4 +1,4 @@
-"""Builds a CLI, Webhook, and Gradio app for Q&A on the FSDL corpus.
+"""Builds a CLI, Webhook, and Gradio app for Q&A on the Full Stack corpus.
 
 For details on corpus construction, see the accompanying notebook."""
 import modal
@@ -62,9 +62,7 @@ def web(query: str, request_id=None):
         f"handling request with client-provided id: {request_id}"
     ) if request_id else None
     answer = qanda_langchain(query, request_id=request_id, with_logging=True)
-    return {
-        "answer": answer,
-    }
+    return {"answer": answer}
 
 
 def qanda_langchain(query: str, request_id=None, with_logging=False) -> str:
@@ -152,7 +150,7 @@ def flush_doc_db():
     docstore.flush()
 
 
-def log_event(query, sources, answer, request_id=None):
+def log_event(query: str, sources, answer: str, request_id=None):
     """Logs the event to Gantry."""
     import os
 
