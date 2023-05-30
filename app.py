@@ -12,7 +12,7 @@ from utils import pretty_log
 image = modal.Image.debian_slim(  # we start from a lightweight linux distro
     python_version="3.10"  # we add a recent Python version
 ).pip_install(  # and we install the following packages:
-    "langchain~=0.0.145",
+    "langchain~=0.0.184",
     # 🦜🔗: a framework for building apps with LLMs
     "openai~=0.26.3",
     # high-quality language models and cheap embeddings
