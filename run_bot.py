@@ -1,4 +1,4 @@
-"""Run a Discord bot that does document Q&A using Modal and LangChain."""
+"""Run a Discord bot frontend for the document Q&A backend."""
 import argparse
 import asyncio
 import logging
