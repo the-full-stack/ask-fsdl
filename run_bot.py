@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+MAINTAINER_ID = os.environ.get("DISCORD_MAINTAINER_ID")
 MODAL_USER_NAME = os.environ["MODAL_USER_NAME"]
 BACKEND_URL = f"https://{MODAL_USER_NAME}--ask-fsdl-hook.modal.run"
 
@@ -27,10 +28,14 @@ async def runner(query, request_id=None):
     if request_id:
         payload["request_id"] = request_id
     async with aiohttp.ClientSession() as session:
-        async with session.get(url=BACKEND_URL, params=payload) as response:
-            assert response.status == 200
-            json_content = await response.json()
-    return json_content["answer"]
+        try:
+            async with session.get(url=BACKEND_URL, params=payload) as response:
+                assert response.status == 200
+                json_content = await response.json()
+                return json_content["answer"]
+        except Exception as e:
+            pretty_log(f"Error: {e}")
+            return "_error"
 
 
 def main(auth, guilds, dev=False):
@@ -84,14 +89,24 @@ def main(auth, guilds, dev=False):
         message_id = original_message.id
         answer = await runner(question, request_id=message_id)
         answer.strip()
-        await ctx.respond(
-            response_fmt.format(
-                mention=respondent.mention, question=question, answer=answer
+        if answer == "_error":
+            error_response = f"Sorry {respondent.mention}, something went wrong."
+            error_response = (
+                error_response + f" I've let <@{MAINTAINER_ID}> know."
+                if MAINTAINER_ID and respondent.id != int(MAINTAINER_ID)
+                else error_response
             )
-        )  # respond
-        for emoji in rating_emojis:
-            await original_message.add_reaction(emoji)
-            await asyncio.sleep(0.25)
+            error_response += " Please try again later."
+            await ctx.respond(error_response)
+        else:
+            await ctx.respond(
+                response_fmt.format(
+                    mention=respondent.mention, question=question, answer=answer
+                )
+            )  # respond
+            for emoji in rating_emojis:
+                await original_message.add_reaction(emoji)
+                await asyncio.sleep(0.25)
 
     if dev:
 
