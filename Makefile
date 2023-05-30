@@ -1,8 +1,6 @@
 ifneq (,$(wildcard ./.env))
     include .env
-	# assume includes MODAL_TOKEN_ID and MODAL_TOKEN_SECRET for modal auth,
-	# assume includes DISCORD_AUTH for running discord bot,
-	# assume includes MONGODB_URI and MONGODB_PASSWORD for document store setup
+	# assume includes DISCORD_AUTH for running discord bot
     export
 endif
 
@@ -13,13 +11,15 @@ help: ## get a list of all the targets, and their short descriptions
 	@# source for the incantation: https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | awk 'BEGIN {FS = ":.*?##"}; {printf "\033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-discord_bot: environment ## run the Discord bot server locally
+it-all: environment secrets document-store vector-index backend discord-bot ## runs all the steps to get the application up and running
+
+discord-bot: environment ## run the Discord bot server locally
 	@echo "###"
 	@echo "# 🥞: Assumes you've set up your bot and deployed the backend on Modal"
 	@echo "###"
 	python run_bot.py
 
-backend: modal_auth ## deploy the Q&A backend on Modal
+backend: modal-auth ## deploy the Q&A backend on Modal
 	@echo "###"
 	@echo "# 🥞: Assumes you've set up the vector index"
 	@echo "###"
@@ -28,41 +28,60 @@ backend: modal_auth ## deploy the Q&A backend on Modal
 	@echo "# 🥞: Gradio interface available at /gradio route"
 	@echo "###"
 
-cli_query: modal_auth ## run a query via a CLI interface
+cli-query: modal-auth ## run a query via a CLI interface
 	@echo "###"
 	@echo "# 🥞: Assumes you've set up the vector storage"
 	@echo "###"
 	modal run app.py::stub.cli --query "${QUERY}"
 
-vector_index: modal_auth ## sets up a FAISS vector index to the application
+vector-index: modal-auth ## sets up a FAISS vector index to the application
 	@echo "###"
-	@echo "# 🥞: Assumes you've set up the document storage"
+	@echo "# 🥞: Assumes you've set up the document storage, see make document-store"
 	@echo "###"
 	modal run app.py::stub.sync_vector_db_to_doc_db
 
-document_store: dev_environment ## updates a MongoDB document store to contain the document corpus
+document-store: environment secrets ## creates a MongoDB collection that contains the document corpus
 	@echo "###"
-	@echo "# 🥞: Assumes you've set up a MongoDB cluster with a database named 'fsdl'"
+	@echo "# 🥞: See docstore.py and the ETL notebook for details"
 	@echo "###"
-	jupyter nbconvert --to notebook --execute "Building the FSDL Corpus.ipynb"
+	modal run etl/shared.py::flush_doc_db # start from scratch
+	modal run etl/videos.py --json-path data/videos.json
+	modal run etl/markdown.py --json-path data/lectures-2022.json
+	modal run etl/pdfs.py --json-path data/llm-papers.json
 
-debugger: modal_auth ## starts a debugger running in our container but accessible via the terminal
+debugger: modal-auth ## starts a debugger running in our container but accessible via the terminal
 	modal run app.py::stub.debug
 
-modal_auth: environment ## confirms authentication with Modal, using secrets from `.env` file
+modal-auth: environment ## confirms authentication with Modal, using secrets from `.env` file
 	@echo "###"
-	@echo "# 🥞: If you haven't gotten a Modal token yet, run make modal_token"
+	@echo "# 🥞: If you haven't gotten a Modal token yet, run make modal-token"
 	@echo "###"
+	@$(if $(value MODAL_TOKEN_ID),, \
+		$(error MODAL_TOKEN_ID is not set. Please set it before running this target.))
+	@$(if $(value MODAL_TOKEN_SECRET),, \
+		$(error MODAL_TOKEN_SECRET is not set. Please set it before running this target.))
 	@modal token set --token-id $(MODAL_TOKEN_ID) --token-secret $(MODAL_TOKEN_SECRET)
 
-modal_token: environment ## creates token ID and secret for authentication with modal
+secrets: modal-auth  ## pushes secrets from .env to Modal
+	@$(if $(value OPENAI_API_KEY),, \
+		$(error OPENAI_API_KEY is not set. Please set it before running this target.))
+	@$(if $(value MONGODB_URI),, \
+		$(error MONGODB_URI is not set. Please set it before running this target.))
+	@$(if $(value MONGODB_USER),, \
+		$(error MONGODB_USER is not set. Please set it before running this target.))
+	@$(if $(value MONGODB_PASSWORD),, \
+		$(error MONGODB_PASSWORD is not set. Please set it before running this target.))
+	modal secret create mongodb-fsdl MONGODB_USER=$(MONGODB_USER) MONGODB_URI=$(MONGODB_URI) MONGODB_PASSWORD=$(MONGODB_PASSWORD)
+	modal secret create openai-api-key-fsdl OPENAI_API_KEY=$(OPENAI_API_KEY)
+
+modal-token: environment ## creates token ID and secret for authentication with modal
 	modal token new
 	@echo "###"
 	@echo "# 🥞: Copy the token info from the file mentioned above into .env"
 	@echo "###"
 
-environment: ## installs required environment for deployment
+environment: ## installs required environment for deployment and corpus generation
 	pip install -qqq -r requirements.txt
 
-dev_environment:  ## installs required environment for development & document corpus generation
+dev-environment:  ## installs required environment for development
 	pip install -qqq -r requirements-dev.txt

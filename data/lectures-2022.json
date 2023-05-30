@@ -1,0 +1,42 @@
+{
+  "lectures": [
+    {
+      "slug": "lecture-1-course-vision-and-when-to-use-ml",
+      "title": "Course Vision & When to Use ML"
+    },
+    {
+      "slug": "lecture-2-development-infrastructure-and-tooling",
+      "title": "Development Infrastructure & Tooling"
+    },
+    {
+      "slug": "lecture-3-troubleshooting-and-testing",
+      "title": "Troubleshooting & Testing"
+    },
+    {
+      "slug": "lecture-4-data-management",
+      "title": "Data Management"
+    },
+    {
+      "slug": "lecture-5-deployment",
+      "title": "Deployment"
+    },
+    {
+      "slug": "lecture-6-continual-learning",
+      "title": "Continual Learning"
+    },
+    {
+      "slug": "lecture-7-foundation-models",
+      "title": "Foundation Models"
+    },
+    {
+      "slug": "lecture-8-teams-and-pm",
+      "title": "Teams & Product Management"
+    },
+    {
+      "slug": "lecture-9-ethics",
+      "title": "Ethics"
+    }
+  ],
+  "md_url_base": "https://raw.githubusercontent.com/the-full-stack/website/main/docs/course/2022",
+  "website_url_base": "https://fullstackdeeplearning.com/course/2022"
+}

@@ -35,7 +35,7 @@ stub = modal.Stub(
     image=image,
     secrets=[
         # this is where we add API keys, passwords, and URLs, which are stored on Modal
-        modal.Secret.from_name("mongodb"),
+        modal.Secret.from_name("mongodb-fsdl"),
         modal.Secret.from_name("openai-api-key-fsdl"),
         modal.Secret.from_name("gantry-api-key"),
     ],
@@ -131,7 +131,7 @@ def sync_vector_db_to_doc_db():
 
     embedding_engine = vecstore.get_embedding_engine(allowed_special="all")
 
-    docs = docstore.get_documents(document_client, "fsdl")
+    docs = docstore.get_documents(document_client)
 
     pretty_log("splitting into bite-size chunks")
     ids, texts, metadatas = prep_documents_for_vector_storage(docs)
@@ -142,6 +142,14 @@ def sync_vector_db_to_doc_db():
     )
     vector_index.save_local(folder_path=VECTOR_DIR, index_name=vecstore.INDEX_NAME)
     pretty_log(f"vector store {vecstore.INDEX_NAME} created")
+
+
+@stub.function(image=image)
+def flush_doc_db():
+    """Empties the document storage."""
+    import docstore
+
+    docstore.flush()
 
 
 def log_event(query, sources, answer, request_id=None):
