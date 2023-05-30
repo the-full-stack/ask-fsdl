@@ -1,0 +1,6 @@
+name: ask-fsdl
+runtime:
+  name: python
+  options:
+    virtualenv: venv
+description: A Discord bot frontend for ask-fsdl
