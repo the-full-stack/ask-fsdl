@@ -17,7 +17,7 @@ discord-bot: environment ## run the Discord bot server locally
 	@echo "###"
 	@echo "# 🥞: Assumes you've set up your bot and deployed the backend on Modal"
 	@echo "###"
-	python run_bot.py
+	python bot/run.py
 
 backend: modal-auth ## deploy the Q&A backend on Modal
 	@echo "###"
@@ -81,7 +81,7 @@ modal-token: environment ## creates token ID and secret for authentication with 
 	@echo "###"
 
 environment: ## installs required environment for deployment and corpus generation
-	pip install -qqq -r requirements.txt
+	python -m pip install -qqq -r requirements.txt
 
 dev-environment:  ## installs required environment for development
-	pip install -qqq -r requirements-dev.txt
+	python -m pip install -qqq -r requirements-dev.txt
