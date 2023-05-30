@@ -78,7 +78,7 @@ FINAL ANSWER:"""  # noqa: E501
 
 main = PromptTemplate(template=template, input_variables=["sources", "question"])
 
-per_source = PromptTemplate(  # TODO: add more context, dynamically
+per_source = PromptTemplate(
     template="Content: {page_content}\nSource: {source}",
     input_variables=["page_content", "source"],
 )

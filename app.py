@@ -98,13 +98,9 @@ def qanda_langchain(query: str, request_id=None, with_logging: bool = False) -> 
     pretty_log(f"running on query: {query}")
     pretty_log("selecting sources by similarity to query")
     sources_and_scores = vector_index.similarity_search_with_relevance_scores(
-        query,
-        k=3,
-        score_threshold=0.6
-        # TODO: run similarity searches for example questions to determine threshold
+        query, k=3, score_threshold=0.6
     )
 
-    # TODO: log the scores to Gantry
     sources, scores = zip(*sources_and_scores)
 
     pretty_log("running query against Q&A chain")
