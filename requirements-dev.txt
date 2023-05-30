@@ -2,12 +2,3 @@
 black==22.3.0
 pre-commit
 ruff
-jupyter
-mistune
-pandas
-python-slugify
-pymongo[srv]
-smart-open
-srt
-youtube-transcript-api
-# TODO: remove old ETL requirements
