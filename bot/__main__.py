@@ -1,6 +1,5 @@
 """Resource definition for the bot application."""
 # TODO: AWS secrets/config setup
-from pathlib import Path
 
 import pulumi
 import pulumi_aws as aws
@@ -8,15 +7,12 @@ import pulumi_aws as aws
 # Retrieve the current stack name
 STACK_NAME = pulumi.get_stack()
 
-# Use the stack name to conditionally change program behavior
 if STACK_NAME == "dev":
     pulumi.log.info("Running in the 'dev' stack.")
-    env_file = Path("..") / ".env.dev"
 else:
     if STACK_NAME != "prod":
         pulumi.log.warning("Unknown stack name, defaulting to prod.")
     pulumi.log.info("Running in the 'prod' stack.")
-    env_file = Path("..") / ".env"
 
 # Get the Pulumi config object
 cfg = pulumi.Config()
@@ -55,8 +51,8 @@ def config_as_env():
     """Return the config elements as environment variables, .env style."""
     # these will be plaintext in the internal Pulumi state.
     # for greater security we could use Pulumi's secret management.
-    sensitive_keys = ["DISCORD_AUTH", "DISCORD_AUTH_DEV", "DISCORD_MAINTAINER_ID"]
-    keys = ["MODAL_USER_NAME"] + sensitive_keys
+    sensitive_keys = ["DISCORD_AUTH", "DISCORD_MAINTAINER_ID"]
+    keys = ["MODAL_USER_NAME", "DISCORD_GUILD_ID"] + sensitive_keys
     return "\n".join([f"{key}={cfg.get(key)}" for key in keys])
 
 

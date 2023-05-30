@@ -7,35 +7,9 @@ import os
 import aiohttp
 import discord
 from discord.ext import commands
-from dotenv import load_dotenv
 
-load_dotenv()
-
-MAINTAINER_ID = os.environ.get("DISCORD_MAINTAINER_ID")
-MODAL_USER_NAME = os.environ["MODAL_USER_NAME"]
-BACKEND_URL = f"https://{MODAL_USER_NAME}--ask-fsdl-hook.modal.run"
-
-guild_ids = {  # TODO: make this configurable
-    "dev": 1070516629328363591,
-    "prod": 984525101678612540,
-}
 
 START, END = "\033[1;36m", "\033[0m"
-
-
-async def runner(query, request_id=None):
-    payload = {"query": query}
-    if request_id:
-        payload["request_id"] = request_id
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(url=BACKEND_URL, params=payload) as response:
-                assert response.status == 200
-                json_content = await response.json()
-                return json_content["answer"]
-        except Exception as e:
-            pretty_log(f"Error: {e}")
-            return "_error"
 
 
 def main(auth, guilds, dev=False):
@@ -116,6 +90,20 @@ def main(auth, guilds, dev=False):
             pretty_log("inside healthcheck")
             await ctx.respond("200 more like 💯 mirite")
 
+    async def runner(query, request_id=None):
+        payload = {"query": query}
+        if request_id:
+            payload["request_id"] = request_id
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.get(url=BACKEND_URL, params=payload) as response:
+                    assert response.status == 200
+                    json_content = await response.json()
+                    return json_content["answer"]
+            except Exception as e:
+                pretty_log(f"Error: {e}")
+                return "_error"
+
     bot.run(auth)
 
 
@@ -132,13 +120,17 @@ def pretty_log(str):
 
 if __name__ == "__main__":
     args = make_argparser().parse_args()
+
+    guilds = [os.environ["DISCORD_GUILD_ID"]]
     auth = os.environ["DISCORD_AUTH"]
-    if args.dev:
-        guilds = [guild_ids["dev"]]
-    else:
-        guilds = [guild_ids["prod"]]
+
+    MAINTAINER_ID = os.environ.get("DISCORD_MAINTAINER_ID")
+    MODAL_USER_NAME = os.environ["MODAL_USER_NAME"]
+    BACKEND_URL = f"https://{MODAL_USER_NAME}--ask-fsdl-hook.modal.run"
+
     if args.dev:
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
+
     main(auth=auth, guilds=guilds, dev=args.dev)

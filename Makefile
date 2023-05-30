@@ -1,6 +1,16 @@
-ifneq (,$(wildcard ./.env))
-    include .env
-    export
+ENV_LOADED :=
+ifeq ($(ENV), dev)
+    ifneq (,$(wildcard ./.env.dev))
+        include .env.dev
+        export
+				ENV_LOADED := Loaded config from .env.dev
+    endif
+else
+    ifneq (,$(wildcard ./.env))
+        include .env
+        export
+				ENV_LOADED := Loaded config from .env
+    endif
 endif
 
 .PHONY: help
@@ -14,13 +24,13 @@ it-all: environment secrets document-store vector-index backend discord-bot ## r
 
 frontend: environment pulumi-config ## deploy the Discord bot server on AWS
 	@echo "###"
-	@echo "# 🥞: Assumes you've set up your bot in Discord, see https://discordpy.readthedocs.io/en/stable/discord.html
+	@echo "# 🥞: Assumes you've set up your bot in Discord, see https://discordpy.readthedocs.io/en/stable/discord.html"
 	@echo "###"
 	pulumi -C bot/ up --yes
 
-discord-bot: environment ## run the Discord bot server locally
+local-frontend: environment ## run the Discord bot server locally
 	@echo "###"
-	@echo "# 🥞: Assumes you've set up your bot in Discord, see https://discordpy.readthedocs.io/en/stable/discord.html
+	@echo "# 🥞: Assumes you've set up your bot in Discord, see https://discordpy.readthedocs.io/en/stable/discord.html"
 	@echo "###"
 	python bot/run.py --dev
 
@@ -79,13 +89,16 @@ secrets: modal-auth  ## pushes secrets from .env to Modal
 	@modal secret create mongodb-fsdl MONGODB_USER=$(MONGODB_USER) MONGODB_URI=$(MONGODB_URI) MONGODB_PASSWORD=$(MONGODB_PASSWORD)
 	@modal secret create openai-api-key-fsdl OPENAI_API_KEY=$(OPENAI_API_KEY)
 
-pulumi-config:  ## adds secrets and config from .env to Pulumi
+pulumi-config:  ## adds secrets and config from env file to Pulumi
 	@$(if $(value MODAL_USER_NAME),, \
 		$(error MODAL_USER_NAME is not set. Please set it before running this target.))
 	@$(if $(value DISCORD_AUTH),, \
 		$(error DISCORD_AUTH is not set. Please set it before running this target.))
+	@$(if $(value DISCORD_GUILD_ID),, \
+		$(error DISCORD_GUILD_ID is not set. Please set it before running this target.))
 	@pulumi -C bot/ config set MODAL_USER_NAME $(MODAL_USER_NAME)
-	@pulumi -C bot/ config set --secret DISCORD_AUTH $(DISCORD_AUTH_DEV)
+	@pulumi -C bot/ config set --secret DISCORD_AUTH $(DISCORD_AUTH)
+	@pulumi -C bot/ config set DISCORD_GUILD_ID $(DISCORD_GUILD_ID)
 	@$(if $(value DISCORD_MAINTAINER_ID),pulumi -C bot/ config set --secret DISCORD_MAINTAINER_ID $(DISCORD_MAINTAINER_ID),)
 	pulumi -C bot/ config
 
@@ -96,6 +109,13 @@ modal-token: environment ## creates token ID and secret for authentication with 
 	@echo "###"
 
 environment: ## installs required environment for deployment and corpus generation
+	@if [ -z "$(ENV_LOADED)" ]; then \
+        echo "Error: Configuration file not found"; \
+    else \
+				echo "###"; \
+				echo "# 🥞: $(ENV_LOADED)"; \
+				echo "###"; \
+	fi
 	python -m pip install -qqq -r requirements.txt
 
 dev-environment:  ## installs required environment for development
