@@ -54,7 +54,7 @@ cli-query: modal-auth ## run a query via a CLI interface
 	@echo "###"
 	modal run app.py::stub.cli --query "${QUERY}"
 
-vector-index: modal-auth ## sets up a FAISS vector index to the application
+vector-index: modal-auth secrets ## sets up a FAISS vector index to the application
 	@echo "###"
 	@echo "# 🥞: Assumes you've set up the document storage, see make document-store"
 	@echo "###"
