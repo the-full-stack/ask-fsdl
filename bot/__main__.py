@@ -62,12 +62,15 @@ def build_startup_script():
     script += "sudo yum update -y\n"  # update yum, package manager for amazon linux
     script += "sudo yum install -y git\n"  # install git for cloning the repo
     script += "sudo amazon-linux-extras install -y python3.8\n"  # install recent python
+    script += "cd ~"
     script += f"git clone -b {GIT_BRANCH} {GIT_URI}\n"  # clone the repo
     script += "cd ask-fsdl\n"  # change directory into the repo
     script += f"""echo "{config_as_env()}" >> .env\n"""  # write the config file
+    script += "export $(grep -v '^#' .env | xargs -d '\n')\n"  # load the config file
     script += "python3.8 -m pip install -r requirements.txt\n"  # install dependencies
-    script += "python3.8 bot/run.py"  # run the Discord bot
-    script += "--dev\n" if STACK_NAME == "dev" else "\n"  # in dev mode if in dev stack
+    script += "nohup python3.8 -u bot/run.py"  # run the Discord bot
+    script += " --dev" if STACK_NAME == "dev" else ""  # in dev mode if in dev stack
+    script += " > bot/log.out 2> bot/log.err &"  # and write logs locally
 
     return script
 
