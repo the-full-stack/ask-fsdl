@@ -17,9 +17,12 @@ def connect():
 
     import pymongo
 
+    mongodb_user = os.environ["MONGODB_USER"]
     mongodb_password = os.environ["MONGODB_PASSWORD"]
     mongodb_uri = os.environ["MONGODB_URI"]
-    connection_string = f"mongodb+srv://fsdl:{mongodb_password}@{mongodb_uri}/?retryWrites=true&w=majority"
+
+    connection_string = f"mongodb+srv://{mongodb_user}:{mongodb_password}@{mongodb_uri}/?retryWrites=true&w=majority"
+
     client = pymongo.MongoClient(connection_string)
 
     return client
