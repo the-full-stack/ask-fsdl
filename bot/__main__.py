@@ -66,7 +66,7 @@ def build_startup_script():
     script += "sudo yum update -y\n"  # update yum, package manager for amazon linux
     script += "sudo yum install -y git\n"  # install git for cloning the repo
     script += "sudo amazon-linux-extras install -y python3.8\n"  # install recent python
-    script += "git clone -b {GIT_BRANCH} {GIT_URI}\n"  # clone the repo
+    script += f"git clone -b {GIT_BRANCH} {GIT_URI}\n"  # clone the repo
     script += "cd ask-fsdl\n"  # change directory into the repo
     script += f"""echo "{config_as_env()}" >> .env\n"""  # write the config file
     script += "python3.8 -m pip install -r requirements.txt\n"  # install dependencies
