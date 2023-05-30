@@ -15,7 +15,7 @@ MAINTAINER_ID = os.environ.get("DISCORD_MAINTAINER_ID")
 MODAL_USER_NAME = os.environ["MODAL_USER_NAME"]
 BACKEND_URL = f"https://{MODAL_USER_NAME}--ask-fsdl-hook.modal.run"
 
-guild_ids = {
+guild_ids = {  # TODO: make this configurable
     "dev": 1070516629328363591,
     "prod": 984525101678612540,
 }
@@ -132,12 +132,11 @@ def pretty_log(str):
 
 if __name__ == "__main__":
     args = make_argparser().parse_args()
+    auth = os.environ["DISCORD_AUTH"]
     if args.dev:
         guilds = [guild_ids["dev"]]
-        auth = os.environ["DISCORD_AUTH_DEV"]
     else:
         guilds = [guild_ids["prod"]]
-        auth = os.environ["DISCORD_AUTH"]
     if args.dev:
         logging.basicConfig(level=logging.DEBUG)
     else:
