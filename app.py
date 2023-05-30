@@ -12,9 +12,9 @@ from utils import pretty_log
 image = modal.Image.debian_slim(  # we start from a lightweight linux distro
     python_version="3.10"  # we add a recent Python version
 ).pip_install(  # and we install the following packages:
-    "langchain~=0.0.145",
+    "langchain~=0.0.184",
     # 🦜🔗: a framework for building apps with LLMs
-    "openai~=0.26.3",
+    "openai~=0.27.7",
     # high-quality language models and cheap embeddings
     "tiktoken",
     # tokenizer for OpenAI models
@@ -41,7 +41,9 @@ stub = modal.Stub(
     ],
     mounts=[
         # we make our local modules available to the container
-        *modal.create_package_mounts(module_names=["vecstore", "docstore", "utils"])
+        *modal.create_package_mounts(
+            module_names=["vecstore", "docstore", "utils", "prompts"]
+        )
     ],
 )
 
@@ -65,7 +67,13 @@ def web(query: str, request_id=None):
     return {"answer": answer}
 
 
-def qanda_langchain(query: str, request_id=None, with_logging=False) -> str:
+@stub.function(
+    image=image,
+    shared_volumes={
+        str(VECTOR_DIR): vector_storage,
+    },
+)
+def qanda_langchain(query: str, request_id=None, with_logging: bool = False) -> str:
     """Runs sourced Q&A for a query using LangChain.
 
     Arguments:
@@ -74,8 +82,9 @@ def qanda_langchain(query: str, request_id=None, with_logging=False) -> str:
         with_logging: If True, logs the interaction to Gantry.
     """
     from langchain.chains.qa_with_sources import load_qa_with_sources_chain
-    from langchain.llms import OpenAI
+    from langchain.chat_models import ChatOpenAI
 
+    import prompts
     import vecstore
 
     embedding_engine = vecstore.get_embedding_engine(allowed_special="all")
@@ -88,16 +97,26 @@ def qanda_langchain(query: str, request_id=None, with_logging=False) -> str:
 
     pretty_log(f"running on query: {query}")
     pretty_log("selecting sources by similarity to query")
-    sources = vector_index.similarity_search(query, k=5)
+    sources_and_scores = vector_index.similarity_search_with_relevance_scores(
+        query,
+        k=3,
+        score_threshold=0.6
+        # TODO: run similarity searches for example questions to determine threshold
+    )
 
-    if with_logging:
-        pretty_log("SOURCES")
-        print(*[source.page_content for source in sources], sep="\n\n---\n\n")
+    # TODO: log the scores to Gantry
+    sources, scores = zip(*sources_and_scores)
 
     pretty_log("running query against Q&A chain")
 
-    llm = OpenAI(model_name="text-davinci-003", temperature=0)
-    chain = load_qa_with_sources_chain(llm, chain_type="stuff")
+    llm = ChatOpenAI(model_name="gpt-4", temperature=0, max_tokens=256)
+    chain = load_qa_with_sources_chain(
+        llm,
+        chain_type="stuff",
+        verbose=with_logging,
+        prompt=prompts.main,
+        document_variable_name="sources",
+    )
 
     result = chain(
         {"input_documents": sources, "question": query}, return_only_outputs=True
@@ -239,7 +258,7 @@ def fastapi_app():
         fn=chain_with_logging,
         inputs="text",
         outputs="text",
-        title="Ask Questions About Full Stack Deep Learning.",
+        title="Ask Questions About The Full Stack.",
         examples=[
             "What is zero-shot chain-of-thought prompting?",
             "Would you rather fight 100 LLaMA-sized GPT-4s or 1 GPT-4-sized LLaMA?",
