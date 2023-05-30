@@ -2,9 +2,12 @@
 import pulumi
 import pulumi_aws as aws
 
+# TODO: make target for pulumi
+# TODO: AWS secrets/config setup
+
 GIT_REPO = "https://github.com/the-full-stack/ask-fsdl.git"
 
-# TODO: can I just configure the security group and call it a day?
+# TODO: wait, can I just configure the security group and call it a day?
 # Create a new VPC
 vpc = aws.ec2.Vpc("ask-fsdl-vpc", cidr_block="10.0.0.0/16")
 
