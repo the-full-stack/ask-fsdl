@@ -35,7 +35,7 @@ stub = modal.Stub(
     image=image,
     secrets=[
         # this is where we add API keys, passwords, and URLs, which are stored on Modal
-        modal.Secret.from_name("mongodb-fsdl"),
+        modal.Secret.from_name("mongodb"),
         modal.Secret.from_name("openai-api-key-fsdl"),
         modal.Secret.from_name("gantry-api-key"),
     ],
