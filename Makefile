@@ -125,7 +125,7 @@ environment: ## installs required environment for deployment and corpus generati
 				echo "# 🥞: $(ENV_LOADED)"; \
 				echo "###"; \
 	fi
-	python -m pip install -qqq -r requirements.txt
+	python3 -m pip install -qqq -r requirements.txt
 
 dev-environment:  ## installs required environment for development
-	python -m pip install -qqq -r requirements-dev.txt
+	python3 -m pip install -qqq -r requirements-dev.txt
