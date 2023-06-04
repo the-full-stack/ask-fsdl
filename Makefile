@@ -85,6 +85,8 @@ secrets: modal-auth  ## pushes secrets from .env to Modal
 		$(error MONGODB_PASSWORD is not set. Please set it before running this target.))
 	@modal secret create mongodb-fsdl MONGODB_USER=$(MONGODB_USER) MONGODB_URI=$(MONGODB_URI) MONGODB_PASSWORD=$(MONGODB_PASSWORD)
 	@modal secret create openai-api-key-fsdl OPENAI_API_KEY=$(OPENAI_API_KEY)
+	# [GANTRY] Disabled. Unfortunately, there is no free plan available.
+	# @modal secret create gantry-api-key OPENAI_API_KEY=$(GANTRY_API_KEY)
 
 modal-auth: environment ## confirms authentication with Modal, using secrets from `.env` file
 	@echo "###"
