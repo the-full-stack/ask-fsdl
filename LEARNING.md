@@ -16,6 +16,39 @@ Setup the environment
 make dev-environment
 ```
 
+#### Install pyenv
+
+```bash
+brew update
+brew install pyenv
+brew install pyenv-virtualenv
+```
+
+Set up your shell environment for Pyenv:
+
+For Zsh:
+
+```bash
+# pyenv
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zshrc
+echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.zshrc
+echo 'eval "$(pyenv init -)"' >> ~/.zshrc
+
+# pyenv-virtualenv
+echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.zshrc
+```
+
+More info:
+
+- https://github.com/pyenv/pyenv
+- https://github.com/pyenv/pyenv-virtualenv
+
+Install the same Python version from [app.py](./app.py)
+
+```
+pyenv install 3.10.9
+```
+
 ### 2 - Get the environment variables
 
 Create Modal account: https://modal.com/
