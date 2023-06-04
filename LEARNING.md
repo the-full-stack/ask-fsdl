@@ -47,6 +47,10 @@ Create a Data base cluster and get the Mongo DB URI Endpoint, Mongo DB user and 
 
 ![connect-3](./documentation/mongodb/connect-3.png)
 
+![create-database-1](./documentation/mongodb/create-database-1.png)
+
+![create-database-2](./documentation/mongodb/create-database-2.png)
+
 ---
 
 Create a new file based on the `.env.example` and copy all API Keys and Mongo DB there.
