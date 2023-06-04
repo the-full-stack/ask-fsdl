@@ -2,3 +2,4 @@ python-dotenv==0.21.0
 py-cord==2.3.2
 modal-client~=0.49
 jupyter
+pymongo

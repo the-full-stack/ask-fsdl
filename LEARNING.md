@@ -1,22 +1,8 @@
 # My Learning
 
-## Steps
+## Steps to prepare the environment
 
-### 1 - Prepare environment
-
-First install pre-commit
-
-```bash
-pip install pre-commit
-```
-
-Setup the environment
-
-```bash
-make dev-environment
-```
-
-#### Install pyenv
+### 1 - Install pyenv
 
 ```bash
 brew update
@@ -45,11 +31,38 @@ More info:
 
 Install the same Python version from [app.py](./app.py)
 
-```
+```bash
 pyenv install 3.10.9
 ```
 
-### 2 - Get the environment variables
+### 2 - Activate the environment
+
+```bash
+pyenv shell 3.10.9
+```
+
+Create a new virtual environment
+
+```bash
+pyenv virtualenv 3.10.9 ask-fsdl
+```
+
+Activate the new virtual environment
+
+```bash
+pyenv activate ask-fsdl
+```
+
+### 3 - Prepare the environment
+
+Setup the environment
+
+```bash
+make dev-environment
+make environment
+```
+
+### 4 - Get the environment variables
 
 Create Modal account: https://modal.com/
 
@@ -88,6 +101,6 @@ Create a Data base cluster and get the Mongo DB URI Endpoint, Mongo DB user and 
 
 Create a new file based on the `.env.example` and copy all API Keys and Mongo DB there.
 
-### 3 - Extract and store data
+### 5 - Extract and store data
 
 Access the [Running ETL to Build the Document Corpus.ipynb](./Running%20ETL%20to%20Build%20the%20Document%20Corpus.ipynb)
