@@ -93,9 +93,17 @@ Create a Data base cluster and get the Mongo DB URI Endpoint, Mongo DB user and 
 
 ![connect-3](./documentation/mongodb/connect-3.png)
 
+Create the database (`fsdl`) and collection (`ask-fsdl`).
+
 ![create-database-1](./documentation/mongodb/create-database-1.png)
 
 ![create-database-2](./documentation/mongodb/create-database-2.png)
+
+Enable the network access
+
+![network-access-1](./documentation/mongodb/network-access-1.png)
+
+![network-access-2](./documentation/mongodb/network-access-2.png)
 
 ---
 
@@ -103,4 +111,4 @@ Create a new file based on the `.env.example` and copy all API Keys and Mongo DB
 
 ### 5 - Extract and store data
 
-Access the [Running ETL to Build the Document Corpus.ipynb](./Running%20ETL%20to%20Build%20the%20Document%20Corpus.ipynb)
+Access the [Running ETL to Build the Document Corpus.ipynb](./Running%20ETL%20to%20Build%20the%20Document%20Corpus.ipynb) and run all steps
