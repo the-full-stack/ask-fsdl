@@ -109,6 +109,24 @@ Enable the network access
 
 Create a new file based on the `.env.example` and copy all API Keys and Mongo DB there.
 
-### 5 - Extract and store data
+### 5 - Extract data and store into the Mongo DB
 
-Access the [Running ETL to Build the Document Corpus.ipynb](./Running%20ETL%20to%20Build%20the%20Document%20Corpus.ipynb) and run all steps
+```bash
+make document-store
+```
+
+[Optional]: To learn how extract data and store step by step access the [Running ETL to Build the Document Corpus.ipynb](./Running%20ETL%20to%20Build%20the%20Document%20Corpus.ipynb) and run all steps.
+
+### 6 - Create the vector index
+
+```bash
+make vector-index
+```
+
+## Troubleshooting
+
+### Retrying langchain.embeddings.openai.embed_with_retry.<locals>.\_embed_with_retry in 4.0 seconds as it raised RateLimitError: Your account is not active, please check your billing details on our website..
+
+Set up payment method: https://platform.openai.com/account/billing/overview
+
+![set-up-payment](./documentation/openai/set-up-payment.png)
