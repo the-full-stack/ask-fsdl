@@ -37,8 +37,7 @@ stub = modal.Stub(
         # this is where we add API keys, passwords, and URLs, which are stored on Modal
         modal.Secret.from_name("mongodb-fsdl"),
         modal.Secret.from_name("openai-api-key-fsdl"),
-        # [GANTRY] Disabled. Unfortunately, there is no free plan available.
-        # modal.Secret.from_name("gantry-api-key"),
+        modal.Secret.from_name("gantry-api-key"),
     ],
     mounts=[
         # we make our local modules available to the container
@@ -61,10 +60,16 @@ vector_storage = modal.SharedVolume().persist("vector-vol")
 @modal.web_endpoint(method="GET", label="ask-fsdl-hook")
 def web(query: str, request_id=None):
     """Exposes our Q&A chain for queries via a web endpoint."""
+    import os
+
     pretty_log(
         f"handling request with client-provided id: {request_id}"
     ) if request_id else None
-    answer = qanda_langchain(query, request_id=request_id, with_logging=True)
+    answer = qanda_langchain(
+        query,
+        request_id=request_id,
+        with_logging=bool(os.environ.get("GANTRY_API_KEY")),
+    )
     return {"answer": answer}
 
 
@@ -122,10 +127,9 @@ def qanda_langchain(query: str, request_id=None, with_logging: bool = False) -> 
 
     if with_logging:
         print(answer)
-        # [GANTRY] Disabled. Unfortunately, there is no free plan available.
-        # pretty_log("logging results to gantry")
-        # record_key = log_event(query, sources, answer, request_id=request_id)
-        # pretty_log(f"logged to gantry with key {record_key}")
+        pretty_log("logging results to gantry")
+        record_key = log_event(query, sources, answer, request_id=request_id)
+        pretty_log(f"logged to gantry with key {record_key}")
 
     return answer
 
