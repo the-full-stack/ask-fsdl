@@ -1,5 +1,7 @@
 documents.json
 
+.DS_Store
+
 .env
 .env.dev
 

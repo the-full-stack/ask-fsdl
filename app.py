@@ -60,10 +60,16 @@ vector_storage = modal.SharedVolume().persist("vector-vol")
 @modal.web_endpoint(method="GET", label="ask-fsdl-hook")
 def web(query: str, request_id=None):
     """Exposes our Q&A chain for queries via a web endpoint."""
+    import os
+
     pretty_log(
         f"handling request with client-provided id: {request_id}"
     ) if request_id else None
-    answer = qanda_langchain(query, request_id=request_id, with_logging=True)
+    answer = qanda_langchain(
+        query,
+        request_id=request_id,
+        with_logging=bool(os.environ.get("GANTRY_API_KEY")),
+    )
     return {"answer": answer}
 
 

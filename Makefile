@@ -85,6 +85,8 @@ secrets: modal-auth  ## pushes secrets from .env to Modal
 		$(error MONGODB_PASSWORD is not set. Please set it before running this target.))
 	@modal secret create mongodb-fsdl MONGODB_USER=$(MONGODB_USER) MONGODB_URI=$(MONGODB_URI) MONGODB_PASSWORD=$(MONGODB_PASSWORD)
 	@modal secret create openai-api-key-fsdl OPENAI_API_KEY=$(OPENAI_API_KEY)
+	@$(if $(value GANTRY_API_KEY),modal secret create gantry-api-key GANTRY_API_KEY=$(GANTRY_API_KEY), \
+ 		$(warning GANTRY_API_KEY is not set. Logging will not be available. Skipping.))
 
 modal-auth: environment ## confirms authentication with Modal, using secrets from `.env` file
 	@echo "###"
@@ -127,5 +129,5 @@ environment: ## installs required environment for deployment and corpus generati
 	fi
 	python -m pip install -qqq -r requirements.txt
 
-dev-environment:  ## installs required environment for development
+dev-environment: environment  ## installs required environment for development
 	python -m pip install -qqq -r requirements-dev.txt
