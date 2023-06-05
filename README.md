@@ -16,7 +16,7 @@ So the resulting application is great at answering questions like
 - How do I build an ML team?
 - What's a data flywheel?
 - Should I use a dedicated vector store for my embeddings?
-- What is zero-shot chain-of-though reasoning?
+- What is zero-shot chain-of-thought reasoning?
 
 ## Stack
 
