@@ -37,7 +37,8 @@ stub = modal.Stub(
         # this is where we add API keys, passwords, and URLs, which are stored on Modal
         modal.Secret.from_name("mongodb-fsdl"),
         modal.Secret.from_name("openai-api-key-fsdl"),
-        modal.Secret.from_name("gantry-api-key"),
+        # [GANTRY] Disabled. Unfortunately, there is no free plan available.
+        # modal.Secret.from_name("gantry-api-key"),
     ],
     mounts=[
         # we make our local modules available to the container
@@ -121,9 +122,10 @@ def qanda_langchain(query: str, request_id=None, with_logging: bool = False) -> 
 
     if with_logging:
         print(answer)
-        pretty_log("logging results to gantry")
-        record_key = log_event(query, sources, answer, request_id=request_id)
-        pretty_log(f"logged to gantry with key {record_key}")
+        # [GANTRY] Disabled. Unfortunately, there is no free plan available.
+        # pretty_log("logging results to gantry")
+        # record_key = log_event(query, sources, answer, request_id=request_id)
+        # pretty_log(f"logged to gantry with key {record_key}")
 
     return answer
 
