@@ -1,7 +1,7 @@
 # Setup from scratch
 
 > These instructions describe the process for setting up this project from scratch.
-> At time of writing, they cover up through deployment of the backend.
+> At time of writing, they cover from Python environment setup through deployment of the backend.
 >
 > They are a community contribution (thanks [@candidosales](https://github.com/candidosales)!) and are provided on a best-effort basis.
 >
@@ -81,7 +81,7 @@ otherwise, run
 make environment
 ```
 
-## II. - Set up managed services and connect them to the app
+## II. Set up managed services and configure the app to use them
 
 From here, the `Makefile` will handle a lot of the heavy lifting
 for coordinating all the pieces of the project.
@@ -247,7 +247,7 @@ check out the [included Jupyter notebook](./Running%20ETL%20to%20Build%20the%20D
 
 Run all steps to create the full document store.
 
-### 2 - Create the vector index
+### 2 - Create a vector index for embedding-based search
 
 We use a vector index to find the most similar documents to a given query.
 
