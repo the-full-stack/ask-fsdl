@@ -131,5 +131,5 @@ environment: ## installs required environment for deployment and corpus generati
 	fi
 	python -m pip install -qqq -r requirements.txt
 
-dev-environment:  ## installs required environment for development
+dev-environment: environment  ## installs required environment for development
 	python -m pip install -qqq -r requirements-dev.txt
