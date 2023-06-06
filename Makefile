@@ -18,16 +18,13 @@ endif
 .PHONY: help
 .DEFAULT_GOAL := help
 
-help: ## get a list of all the targets, and their short descriptions
+help: logo ## get a list of all the targets, and their short descriptions
 	@# source for the incantation: https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | awk 'BEGIN {FS = ":.*?##"}; {printf "\033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-it-all: document-store vector-index backend frontend ## runs all automated steps to get the application up and running
+it-all: logo document-store vector-index backend frontend ## runs all automated steps to get the application up and running
 
 frontend: environment pulumi-config ## deploy the Discord bot server on AWS
-	@echo "###"
-	@echo "# 🥞: Assumes you've set up your bot in Discord, see https://discordpy.readthedocs.io/en/stable/discord.html"
-	@echo "###"
 	pulumi -C bot/ up --yes
 	@echo "###"
 	@echo "# 🥞: Allow 1-3 minutes for bot to start up"
@@ -105,6 +102,9 @@ modal-token: environment ## creates token ID and secret for authentication with 
 	@echo "###"
 
 pulumi-config:  ## adds secrets and config from env file to Pulumi
+	@echo "###"
+	@echo "# 🥞: For more on setting up a bot account in Discord, see https://discordpy.readthedocs.io/en/stable/discord.html"
+	@echo "###"
 	$(if $(filter dev, $(value ENV)),pulumi -C bot/ stack select dev, \
 		pulumi -C bot/ stack select prod)
 	@$(if $(value MODAL_USER_NAME),, \
@@ -131,3 +131,6 @@ environment: ## installs required environment for deployment and corpus generati
 
 dev-environment: environment  ## installs required environment for development
 	python -m pip install -qqq -r requirements-dev.txt
+
+logo:  ## prints the logo
+	@cat logo.txt; echo "\n"
