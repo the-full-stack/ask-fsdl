@@ -170,7 +170,7 @@ Follow instructions [here](https://www.mongodb.com/cloud/atlas/lp/try4).
 
 #### b - Create a cluster for your database
 
-![create-cluster](./setup/mongodb/create-cluster.png)
+![create-cluster](./mongodb/create-cluster.png)
 
 #### c - Create a database and document collection
 
@@ -178,7 +178,7 @@ A document collection is like a table in a relational database.
 
 Name them `fsdl` and `ask-fsdl`, respectively.
 
-![create-database-2](./setup/mongodb/create-database-2.png)
+![create-database-2](./mongodb/create-database-2.png)
 
 #### d - Create a user and password
 
@@ -186,9 +186,9 @@ See instructions [here](https://www.youtube.com/watch?v=5-hybmPlZ_U&t=11s).
 
 #### e - Enable network access
 
-![network-access-1](./setup/mongodb/network-access-1.png)
+![network-access-1](./mongodb/network-access-1.png)
 
-![network-access-2](./setup/mongodb/network-access-2.png)
+![network-access-2](./mongodb/network-access-2.png)
 
 #### f - Get the information required to connect to the database
 
@@ -204,13 +204,13 @@ This information goes in the `.env` file.
 You can find that information, except for the password,
 in the "Connect" tab of the MongoDB Atlas dashboard:
 
-![create-database-1](./setup/mongodb/create-database-1.png)
+![create-database-1](./mongodb/create-database-1.png)
 
-![connect-1](./setup/mongodb/connect-1.png)
+![connect-1](./mongodb/connect-1.png)
 
-![connect-2](./setup/mongodb/connect-2.png)
+![connect-2](./mongodb/connect-2.png)
 
-![connect-3](./setup/mongodb/connect-3.png)
+![connect-3](./mongodb/connect-3.png)
 
 ### 5 - Push all of the configuration information to Modal
 
