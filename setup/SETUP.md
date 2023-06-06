@@ -146,7 +146,7 @@ Make sure you set up a payment method!
 > Creating the embeddings is cheap, on the order of a few cents.
 >
 > But _each query of the chatbot_ costs a few cents,
-so you might also want to set a limit on your account.
+> so you might also want to set a limit on your account.
 
 Add the OpenAI API key to the `.env` file.
 
@@ -170,7 +170,7 @@ Follow instructions [here](https://www.mongodb.com/cloud/atlas/lp/try4).
 
 #### b - Create a cluster for your database
 
-![create-cluster](./documentation/mongodb/create-cluster.png)
+![create-cluster](./mongodb/create-cluster.png)
 
 #### c - Create a database and document collection
 
@@ -178,7 +178,7 @@ A document collection is like a table in a relational database.
 
 Name them `fsdl` and `ask-fsdl`, respectively.
 
-![create-database-2](./documentation/mongodb/create-database-2.png)
+![create-database-2](./mongodb/create-database-2.png)
 
 #### d - Create a user and password
 
@@ -186,9 +186,9 @@ See instructions [here](https://www.youtube.com/watch?v=5-hybmPlZ_U&t=11s).
 
 #### e - Enable network access
 
-![network-access-1](./documentation/mongodb/network-access-1.png)
+![network-access-1](./mongodb/network-access-1.png)
 
-![network-access-2](./documentation/mongodb/network-access-2.png)
+![network-access-2](./mongodb/network-access-2.png)
 
 #### f - Get the information required to connect to the database
 
@@ -204,13 +204,13 @@ This information goes in the `.env` file.
 You can find that information, except for the password,
 in the "Connect" tab of the MongoDB Atlas dashboard:
 
-![create-database-1](./documentation/mongodb/create-database-1.png)
+![create-database-1](./mongodb/create-database-1.png)
 
-![connect-1](./documentation/mongodb/connect-1.png)
+![connect-1](./mongodb/connect-1.png)
 
-![connect-2](./documentation/mongodb/connect-2.png)
+![connect-2](./mongodb/connect-2.png)
 
-![connect-3](./documentation/mongodb/connect-3.png)
+![connect-3](./mongodb/connect-3.png)
 
 ### 5 - Push all of the configuration information to Modal
 
@@ -321,4 +321,4 @@ Note that this wipes the existing database and vector index!
 
 Set up payment method: https://platform.openai.com/account/billing/overview
 
-![set-up-payment](./documentation/openai/set-up-payment.png)
+![set-up-payment](./openai/set-up-payment.png)
