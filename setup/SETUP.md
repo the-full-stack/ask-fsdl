@@ -145,8 +145,7 @@ Make sure you set up a payment method!
 
 > Creating the embeddings is cheap, on the order of a few cents.
 >
-> But _each query of the chatbot_ costs a few cents,
-> so you might also want to set a limit on your account.
+> But _each query of the chatbot_ costs a few cents, so you might also want to set a limit on your account.
 
 Add the OpenAI API key to the `.env` file.
 
