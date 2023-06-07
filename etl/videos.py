@@ -29,11 +29,9 @@ def main(json_path="data/videos.json"):
     with open(json_path) as f:
         video_infos = json.load(f)
 
-    video_ids = [video["id"] for video in video_infos]
-
     documents = (
         etl.shared.unchunk(  # each video creates multiple documents, so we flatten
-            extract_subtitles.map(video_ids, return_exceptions=True)
+            extract_subtitles.map(video_infos, return_exceptions=True)
         )
     )
 
@@ -43,10 +41,15 @@ def main(json_path="data/videos.json"):
 
 
 @stub.function()
-def extract_subtitles(video_id):
+def extract_subtitles(video_info):
+    video_id, video_title = video_info["id"], video_info["title"]
     subtitles = get_transcript(video_id)
-    merged_subtitles = merge_subtitles(subtitles)
-    return create_documents(merged_subtitles, video_id)
+    chapters = get_chapters(video_id)
+    chapters = add_transcript(chapters, subtitles)
+
+    documents = create_documents(chapters, video_id, video_title)
+
+    return documents
 
 
 def get_transcript(video_id):
@@ -55,48 +58,64 @@ def get_transcript(video_id):
     return YouTubeTranscriptApi.get_transcript(video_id)
 
 
-def merge_subtitles(subtitles):
-    TRIGGER_LENGTH = 750  # 30-60 seconds
+def get_chapters(video_id):
+    import requests
 
-    merged_subtitles = []
-    current_chunk, current_length, chunk_idx = [], 0, 1
+    base_url = "https://yt.lemnoslife.com"
+    request_path = "/videos"
 
-    for subtitle in subtitles:
-        current_chunk.append(subtitle)
-        added_length = get_charcount(subtitle)
-        new_length = current_length + added_length
+    params = {"id": video_id, "part": "chapters"}
 
-        if new_length >= TRIGGER_LENGTH:
-            merged_subtitle = merge(current_chunk, chunk_idx)
-            merged_subtitles.append(merged_subtitle)
-            current_chunk, current_length = [], 0
-            chunk_idx += 1
-        else:
-            current_length = new_length
+    response = requests.get(base_url + request_path, params=params)
+    response.raise_for_status()
 
-    if current_chunk:
-        merged_subtitle = merge(current_chunk, chunk_idx)
-        merged_subtitles.append(merged_subtitle)
+    chapters = response.json()["items"][0]["chapters"]["chapters"]
+    assert len(chapters) >= 0, "Video has no chapters"
 
-    return merged_subtitles
+    for chapter in chapters:
+        del chapter["thumbnails"]
+
+    return chapters
 
 
-def create_documents(subtitles, id):
+def add_transcript(chapters, subtitles):
+    for ii, chapter in enumerate(chapters):
+        next_chapter = chapters[ii + 1] if ii < len(chapters) - 1 else {"time": 1e10}
+
+        text = " ".join(
+            [
+                seg["text"]
+                for seg in subtitles
+                if seg["start"] >= chapter["time"]
+                and seg["start"] < next_chapter["time"]
+            ]
+        )
+
+        chapter["text"] = text
+
+    return chapters
+
+
+def create_documents(chapters, id, video_title):
     base_url = f"https://www.youtube.com/watch?v={id}"
     query_params_format = "&t={start}s"
     documents = []
 
-    for subtitle in subtitles:
-        raw_text = subtitle.content
-        text = raw_text.strip()
-        start = timestamp_from_timedelta(subtitle.start)
+    for chapter in chapters:
+        text = chapter["text"].strip()
+        start = chapter["time"]
         url = base_url + query_params_format.format(start=start)
 
         document = {"text": text, "metadata": {"source": url}}
 
+        document["metadata"]["title"] = video_title
+        document["metadata"]["chapter-title"] = chapter["title"]
+        document["metadata"]["full-title"] = f"{video_title} - {chapter['title']}"
+
         documents.append(document)
 
     documents = etl.shared.enrich_metadata(documents)
+
     return documents
 
 
