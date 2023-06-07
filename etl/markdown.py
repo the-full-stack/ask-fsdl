@@ -70,7 +70,12 @@ def to_documents(lecture, website_url, md_url):
 
     sources = [f"{website_url}#{heading}" for heading in heading_slugs]
     metadatas = [
-        {"source": source, "heading": heading, "title": title}
+        {
+            "source": source,
+            "heading": heading,
+            "title": title,
+            "full-title": f"{title} - {heading}",
+        }
         for heading, source in zip(headings, sources)
     ]
 
