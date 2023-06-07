@@ -100,6 +100,7 @@ def qanda_langchain(query: str, request_id=None, with_logging: bool = False) -> 
         vecstore.INDEX_NAME, embedding_engine
     )
     pretty_log("connected to vector storage")
+    pretty_log(f"found {vector_index.index.ntotal} vectors to search over")
 
     pretty_log(f"running on query: {query}")
     pretty_log("selecting sources by similarity to query")
@@ -148,7 +149,7 @@ def sync_vector_db_to_doc_db():
     document_client = docstore.connect()
     pretty_log("connected to document DB")
 
-    embedding_engine = vecstore.get_embedding_engine(allowed_special="all")
+    embedding_engine = vecstore.get_embedding_engine(disallowed_special=())
 
     docs = docstore.get_documents(document_client)
 
