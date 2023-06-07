@@ -32,7 +32,6 @@ def main(json_path="data/llm-papers.json"):
         pdf_infos = json.load(f)
 
     pdf_urls = [pdf["url"] for pdf in pdf_infos]
-    pdf_urls = pdf_urls[:1]
 
     documents = etl.shared.unchunk(extract_pdf.map(pdf_urls, return_exceptions=True))
 
@@ -57,7 +56,7 @@ def extract_pdf(pdf_url):
     for document in documents:
         document["metadata"]["source"] = pdf_url
 
-    document = etl.shared.enrich_metadata(documents)
+    documents = etl.shared.enrich_metadata(documents)
 
     return documents
 
