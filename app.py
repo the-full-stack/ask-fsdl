@@ -15,6 +15,7 @@ image = modal.Image.debian_slim(  # we start from a lightweight linux distro
     "langchain~=0.0.184",
     # 🦜🔗: a framework for building apps with LLMs
     "openai~=0.27.7",
+    "anthropic~=0.2.10",
     # high-quality language models and cheap embeddings
     "tiktoken",
     # tokenizer for OpenAI models
@@ -26,6 +27,8 @@ image = modal.Image.debian_slim(  # we start from a lightweight linux distro
     # simple web UIs in Python, from 🤗
     "gantry==0.5.6",
     # 🏗️: monitoring, observability, and continual improvement for ML systems
+    "wandb"
+    # ️🪄🐝: storage and visualization of LangChain traces
 )
 
 # we define a Stub to hold all the pieces of our app
@@ -37,6 +40,8 @@ stub = modal.Stub(
         # this is where we add API keys, passwords, and URLs, which are stored on Modal
         modal.Secret.from_name("mongodb-fsdl"),
         modal.Secret.from_name("openai-api-key-fsdl"),
+        modal.Secret.from_name("anthropic-api-key-fsdl"),
+        modal.Secret.from_name("wandb-api-key-fsdl"),
         modal.Secret.from_name("gantry-api-key"),
     ],
     mounts=[
@@ -88,10 +93,21 @@ def qanda_langchain(query: str, request_id=None, with_logging: bool = False) -> 
         with_logging: If True, logs the interaction to Gantry.
     """
     from langchain.chains.qa_with_sources import load_qa_with_sources_chain
-    from langchain.chat_models import ChatOpenAI
+    from langchain.chat_models import ChatAnthropic
 
     import prompts
     import vecstore
+
+    if with_logging:
+        import os
+
+        import wandb
+        from wandb.integration.langchain import WandbTracer
+
+        pretty_log("sending traces to wandb")
+        wandb_config = {"project": "ask-fsdl"}
+        wandb.login(key=os.environ["WANDB_API_KEY"])
+        tracer = WandbTracer(wandb_config)
 
     embedding_engine = vecstore.get_embedding_engine(allowed_special="all")
 
@@ -112,17 +128,19 @@ def qanda_langchain(query: str, request_id=None, with_logging: bool = False) -> 
 
     pretty_log("running query against Q&A chain")
 
-    llm = ChatOpenAI(model_name="gpt-4", temperature=0, max_tokens=256)
+    # llm = ChatOpenAI(model_name="gpt-4", temperature=0, max_tokens=256)
+    llm = ChatAnthropic(model="claude-v1", temperature=0, max_tokens_to_sample=512)
     chain = load_qa_with_sources_chain(
         llm,
         chain_type="stuff",
-        verbose=with_logging,
         prompt=prompts.main,
         document_variable_name="sources",
     )
 
     result = chain(
-        {"input_documents": sources, "question": query}, return_only_outputs=True
+        inputs={"input_documents": sources, "question": query},
+        return_only_outputs=True,
+        callbacks=[tracer] if with_logging else [],
     )
     answer = result["output_text"]
 
@@ -131,6 +149,8 @@ def qanda_langchain(query: str, request_id=None, with_logging: bool = False) -> 
         pretty_log("logging results to gantry")
         record_key = log_event(query, sources, answer, request_id=request_id)
         pretty_log(f"logged to gantry with key {record_key}")
+
+        tracer.finish()
 
     return answer
 
