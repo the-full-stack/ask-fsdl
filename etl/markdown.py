@@ -79,6 +79,8 @@ def to_documents(lecture, website_url, md_url):
         for subtext, metadata in zip(subtexts, metadatas)
     ]
 
+    documents = etl.shared.enrich_metadata(documents)
+
     return documents
 
 
