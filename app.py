@@ -275,18 +275,3 @@ def fastapi_app():
     )
 
     return mount_gradio_app(app=web_app, blocks=interface, path="/gradio")
-
-
-@stub.function(
-    image=image,
-    interactive=True,
-    shared_volumes={
-        str(VECTOR_DIR): vector_storage,
-    },
-    timeout=3600,
-)
-def debug():
-    """Convenient debugging access to Modal."""
-    import IPython
-
-    IPython.embed()

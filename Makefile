@@ -42,10 +42,17 @@ backend: modal-auth ## deploy the Q&A backend on Modal
 	@echo "###"
 	@echo "# 🥞: Assumes you've set up the vector index"
 	@echo "###"
-	modal deploy app.py
 	@echo "###"
-	@echo "# 🥞: Gradio interface available at /gradio route"
+	@echo "# 🥞: Setting up backend for $(ENV)"
 	@echo "###"
+	@if [ "$(ENV)" = "dev" ]; then \
+		echo "###";\
+		echo "# 🥞: Testing UI interface will become available at /gradio route of app";\
+		echo "###";\
+    	bash modal serve app.py ;\
+    else \
+			bash modal deploy app.py; \
+	fi
 
 cli-query: modal-auth ## run a query via a CLI interface
 	@echo "###"
@@ -69,7 +76,7 @@ document-store: environment secrets ## creates a MongoDB collection that contain
 	modal run etl/pdfs.py --json-path data/llm-papers.json
 
 debugger: modal-auth ## starts a debugger running in our container but accessible via the terminal
-	modal run app.py::stub.debug
+	bash modal shell app.py
 
 secrets: modal-auth  ## pushes secrets from .env to Modal
 	@$(if $(value OPENAI_API_KEY),, \
@@ -121,11 +128,12 @@ pulumi-config:  ## adds secrets and config from env file to Pulumi
 
 environment: ## installs required environment for deployment and corpus generation
 	@if [ -z "$(ENV_LOADED)" ]; then \
-        echo "Error: Configuration file not found"; \
+			echo "Error: Configuration file not found" >&2; \
+			exit 1; \
     else \
-				echo "###"; \
-				echo "# 🥞: $(ENV_LOADED)"; \
-				echo "###"; \
+			echo "###"; \
+			echo "# 🥞: $(ENV_LOADED)"; \
+			echo "###"; \
 	fi
 	python -m pip install -qqq -r requirements.txt
 
