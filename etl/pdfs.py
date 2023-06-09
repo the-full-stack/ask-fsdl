@@ -28,13 +28,23 @@ def main(json_path="data/llm-papers.json"):
     modal run etl/pdfs.py --json-path /path/to/json
     """
     import json
+    from pathlib import Path
+
+    json_path = Path(json_path).resolve()
+
+    if not json_path.exists():
+        print(f"{json_path} not found, writing to it from the database.")
+        paper_data = fetch_papers.call()
+        paper_data_json = json.dumps(paper_data, indent=2)
+        with open(json_path, "w") as f:
+            f.write(paper_data_json)
 
     with open(json_path) as f:
-        pdf_infos = json.load(f)
+        paper_data = json.load(f)
 
-    pdf_urls = [pdf["url"] for pdf in pdf_infos]
+    paper_data = get_pdf_url.map(paper_data, return_exceptions=True)
 
-    documents = etl.shared.unchunk(extract_pdf.map(pdf_urls, return_exceptions=True))
+    documents = etl.shared.unchunk(extract_pdf.map(paper_data, return_exceptions=True))
 
     with etl.shared.stub.run():
         chunked_documents = etl.shared.chunk_into(documents, 10)
@@ -42,15 +52,23 @@ def main(json_path="data/llm-papers.json"):
 
 
 @stub.function(image=image)
-def extract_pdf(pdf_url):
-    """Extracts the text from a PDF."""
+def extract_pdf(paper_data):
+    """Extracts the text from a PDF and adds metadata."""
     import arxiv
 
     from langchain.document_loaders import PyPDFLoader
 
+    pdf_url = paper_data.get("pdf_url")
+    if pdf_url is None:
+        return []
+
     loader = PyPDFLoader(pdf_url)
 
-    documents = loader.load_and_split()
+    try:
+        documents = loader.load_and_split()
+    except Exception:
+        return []
+
     documents = [document.dict() for document in documents]
     for document in documents:  # rename page_content to text
         document["text"] = document["page_content"]
@@ -59,20 +77,21 @@ def extract_pdf(pdf_url):
     if "arxiv" in pdf_url:
         arxiv_id = extract_arxiv_id_from_url(pdf_url)
         result = next(arxiv.Search(id_list=[arxiv_id], max_results=1).results())
-        arxiv_metadata = {
+        metadata = {
             "arxiv_id": arxiv_id,
             "title": result.title,
             "date": result.updated,
         }
     else:
-        arxiv_metadata = {}
+        metadata = {"title": paper_data.get("title")}
 
     documents = annotate_endmatter(documents)
+
     for document in documents:
         document["metadata"]["source"] = pdf_url
-        document["metadata"] |= arxiv_metadata
+        document["metadata"] |= metadata
         title, page = (
-            document["metadata"].get("title", None),
+            document["metadata"]["title"],
             document["metadata"]["page"],
         )
         if title:
@@ -81,6 +100,64 @@ def extract_pdf(pdf_url):
     documents = etl.shared.enrich_metadata(documents)
 
     return documents
+
+
+@stub.function()
+def fetch_papers(collection_name="all-content"):
+    """Fetches papers from the LLM Lit Review, https://tfs.ai/llm-lit-review."""
+    import docstore
+
+    client = docstore.connect()
+
+    collection = client.get_database("llm-lit-review").get_collection(collection_name)
+
+    # Query to retrieve documents with the "PDF?" field set to true
+    query = {"properties.PDF?.checkbox": {"$exists": True, "$eq": True}}
+
+    # Projection to include the "Name", "url", and "Tags" fields
+    projection = {
+        "properties.Name.title.plain_text": 1,
+        "properties.Link.url": 1,
+        "properties.Tags.multi_select.name": 1,
+    }
+
+    # Fetch documents matching the query and projection
+    documents = list(collection.find(query, projection))
+    assert documents
+
+    papers = []
+    for doc in documents:
+        paper = {}
+        paper["title"] = doc["properties"]["Name"]["title"][0]["plain_text"]
+        paper["url"] = doc["properties"]["Link"]["url"]
+        paper["tags"] = [
+            tag["name"]
+            for tag in doc.get("properties", {}).get("Tags", {}).get("multi_select", [])
+        ]
+        papers.append(paper)
+
+    assert papers
+
+    return papers
+
+
+@stub.function()
+def get_pdf_url(paper_data):
+    """Attempts to extract a PDF URL from a paper's URL."""
+    url = paper_data["url"]
+    if url.strip("#/").endswith(".pdf"):
+        pdf_url = url
+    elif "arxiv.org" in url:
+        arxiv_id = extract_arxiv_id_from_url(url)
+        pdf_url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
+    elif "aclanthology.org" in url:
+        pdf_url = url.strip("/")
+        url += ".pdf"
+    else:
+        pdf_url = None
+    paper_data["pdf_url"] = pdf_url
+
+    return paper_data
 
 
 def annotate_endmatter(pages, min_pages=6):

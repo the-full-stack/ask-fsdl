@@ -49,7 +49,7 @@ backend: modal-auth ## deploy the Q&A backend on Modal
 
 cli-query: modal-auth ## run a query via a CLI interface
 	@echo "###"
-	@echo "# 🥞: Assumes you've set up the vector storage"
+	@echo "# 🥞: Assumes you've set up the vector index"
 	@echo "###"
 	modal run app.py::stub.cli --query "${QUERY}"
 
