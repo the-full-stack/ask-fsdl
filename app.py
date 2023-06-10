@@ -1,15 +1,12 @@
 """Builds a CLI, Webhook, and Gradio app for Q&A on the Full Stack corpus.
 
 For details on corpus construction, see the accompanying notebook."""
-import os
-
 import modal
 from fastapi import FastAPI
 
 import vecstore
 from utils import pretty_log
 
-ENV = os.environ.get("ENV")
 
 # definition of our container image for jobs on Modal
 # Modal gets really powerful when you start using multiple images!
@@ -39,9 +36,9 @@ stub = modal.Stub(
     image=image,
     secrets=[
         # this is where we add API keys, passwords, and URLs, which are stored on Modal
-        modal.Secret.from_name("mongodb-fsdl" + f"-{ENV}" if ENV else ""),
-        modal.Secret.from_name("openai-api-key-fsdl" + f"-{ENV}" if ENV else ""),
-        modal.Secret.from_name("gantry-api-key" + f"-{ENV}" if ENV else ""),
+        modal.Secret.from_name("mongodb-fsdl"),
+        modal.Secret.from_name("openai-api-key-fsdl"),
+        modal.Secret.from_name("gantry-api-key-fsdl"),
     ],
     mounts=[
         # we make our local modules available to the container
