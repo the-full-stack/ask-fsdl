@@ -58,6 +58,8 @@ def main(json_path="data/llm-papers.json", collection=None, db=None):
 @stub.function(image=image)
 def extract_pdf(paper_data):
     """Extracts the text from a PDF and adds metadata."""
+    import logging
+
     import arxiv
 
     from langchain.document_loaders import PyPDFLoader
@@ -65,6 +67,9 @@ def extract_pdf(paper_data):
     pdf_url = paper_data.get("pdf_url")
     if pdf_url is None:
         return []
+
+    logger = logging.getLogger("pypdf")
+    logger.setLevel(logging.ERROR)
 
     loader = PyPDFLoader(pdf_url)
 
@@ -92,7 +97,7 @@ def extract_pdf(paper_data):
     documents = annotate_endmatter(documents)
 
     for document in documents:
-        document["metadata"]["source"] = pdf_url
+        document["metadata"]["source"] = paper_data.get("url", pdf_url)
         document["metadata"] |= metadata
         title, page = (
             document["metadata"]["title"],
