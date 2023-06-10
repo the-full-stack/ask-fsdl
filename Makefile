@@ -48,10 +48,7 @@ vector-index: modal-auth secrets ## sets up a FAISS vector index to the applicat
 
 document-store: environment secrets ## creates a MongoDB collection that contains the document corpus
 	@tasks/pretty_log.sh "See docstore.py and the ETL notebook for details"
-	modal run etl/shared.py::flush_doc_db # start from scratch
-	modal run etl/videos.py --json-path data/videos.json
-	modal run etl/markdown.py --json-path data/lectures-2022.json
-	modal run etl/pdfs.py --json-path data/llm-papers.json
+	tasks/run_etl.sh --flush
 
 debugger: modal-auth ## starts a debugger running in our container but accessible via the terminal
 	bash modal shell app.py
