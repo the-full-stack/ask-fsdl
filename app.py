@@ -149,10 +149,12 @@ def create_vector_index(collection: str = None, db: str = None):
     import docstore
 
     pretty_log("connecting to document store")
-    document_client = docstore.connect()
+    db = docstore.get_database(db)
+    pretty_log("connected to database {db.name}")
 
-    pretty_log("collecting documents")
-    docs = docstore.get_documents(collection, db, document_client)
+    collection = docstore.get_collection(collection, db)
+    pretty_log("collecting documents from {collection.name}")
+    docs = docstore.get_documents(collection, db)
 
     pretty_log("splitting into bite-size chunks")
     ids, texts, metadatas = prep_documents_for_vector_storage(docs)
