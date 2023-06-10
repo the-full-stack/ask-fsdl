@@ -20,7 +20,7 @@ def get_embedding_engine(model="text-embedding-ada-002", **kwargs):
     """Retrieves the embedding engine."""
     from langchain.embeddings import OpenAIEmbeddings
 
-    embedding_engine = OpenAIEmbeddings(model="text-embedding-ada-002", **kwargs)
+    embedding_engine = OpenAIEmbeddings(model=model, **kwargs)
 
     return embedding_engine
 
