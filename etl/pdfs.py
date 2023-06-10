@@ -22,7 +22,7 @@ stub = modal.Stub(
 
 
 @stub.local_entrypoint()
-def main(json_path="data/llm-papers.json"):
+def main(json_path="data/llm-papers.json", collection=None, db=None):
     """Calls the ETL pipeline using a JSON file with PDF metadata.
 
     modal run etl/pdfs.py --json-path /path/to/json
@@ -48,7 +48,11 @@ def main(json_path="data/llm-papers.json"):
 
     with etl.shared.stub.run():
         chunked_documents = etl.shared.chunk_into(documents, 10)
-        list(etl.shared.add_to_document_db.map(chunked_documents))
+        list(
+            etl.shared.add_to_document_db.map(
+                chunked_documents, kwargs={"db": db, "collection": collection}
+            )
+        )
 
 
 @stub.function(image=image)

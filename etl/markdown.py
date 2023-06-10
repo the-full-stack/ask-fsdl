@@ -22,9 +22,9 @@ stub = modal.Stub(
 )
 
 
-# run coordinating code locally, with heavy-duty processing in the cloud
+# run simple coordinating code locally, with dependency-inducing processing in the cloud
 @stub.local_entrypoint()
-def main(json_path="data/lectures-2022.json"):
+def main(json_path="data/lectures-2022.json", collection=None, db=None):
     """Calls the ETL pipeline using a JSON file with markdown file metadata.
 
     modal run etl/markdown.py --json-path /path/to/json
@@ -53,7 +53,11 @@ def main(json_path="data/lectures-2022.json"):
 
     with etl.shared.stub.run():
         chunked_documents = etl.shared.chunk_into(documents, 10)
-        list(etl.shared.add_to_document_db.map(chunked_documents))
+        list(
+            etl.shared.add_to_document_db.map(
+                chunked_documents, kwargs={"db": db, "collection": collection}
+            )
+        )
 
 
 @stub.function(image=image)

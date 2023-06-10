@@ -17,27 +17,13 @@ stub = modal.Stub(
 
 
 @stub.function(image=image)
-def flush_doc_db():
-    """Empties the document database."""
-    import docstore
-
-    docstore.flush()
-
-
-@stub.function(image=image)
-def add_to_document_db(documents_json, db=None, collection=None):
-    """Adds a collection of json documents to a document database."""
-
+def add_to_document_db(documents_json, collection=None, db=None):
+    """Adds a collection of json documents to a database."""
     from pymongo import InsertOne
 
     import docstore
 
-    client = docstore.connect()
-
-    db = client.get_database(db if db else docstore.MONGO_DATABASE)
-    collection = db.get_collection(
-        collection if collection else docstore.MONGO_COLLECTION
-    )
+    collection = docstore.get_collection(collection, db)
 
     requesting, CHUNK_SIZE = [], 250
 
@@ -53,31 +39,21 @@ def add_to_document_db(documents_json, db=None, collection=None):
 
 
 @stub.function(image=image)
-def query_document_db(query, projection=None, db=None, collection=None):
+def query_document_db(query, projection=None, collection=None, db=None):
     """Runs a query against the document db and returns a list of results."""
     import docstore
 
-    client = docstore.connect()
-
-    db = client.get_database(db if db else docstore.MONGO_DATABASE)
-    collection = db.get_collection(
-        collection if collection else docstore.MONGO_COLLECTION
-    )
+    collection = docstore.get_collection(collection, db)
 
     return list(collection.find(query, projection))
 
 
 @stub.function(image=image)
-def query_one_document_db(query, projection=None, db=None, collection=None):
+def query_one_document_db(query, projection=None, collection=None, db=None):
     """Runs a query against the document db and returns the first result."""
     import docstore
 
-    client = docstore.connect()
-
-    db = client.get_database(db if db else docstore.MONGO_DATABASE)
-    collection = db.get_collection(
-        collection if collection else docstore.MONGO_COLLECTION
-    )
+    collection = docstore.get_collection(collection, db)
 
     return collection.find_one(query, projection)
 
