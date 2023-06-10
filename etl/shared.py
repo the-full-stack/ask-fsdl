@@ -3,8 +3,7 @@ import modal
 # definition of our container image and app for deployment on Modal
 # see app.py for more details
 image = modal.Image.debian_slim(python_version="3.10").pip_install(
-    "langchain~=0.0.98",
-    "pymongo[srv]==3.11",
+    "langchain~=0.0.98", "pymongo[srv]==3.11"
 )
 
 stub = modal.Stub(
@@ -36,26 +35,6 @@ def add_to_document_db(documents_json, collection=None, db=None):
 
     if requesting:
         collection.bulk_write(requesting)
-
-
-@stub.function(image=image)
-def query_document_db(query, projection=None, collection=None, db=None):
-    """Runs a query against the document db and returns a list of results."""
-    import docstore
-
-    collection = docstore.get_collection(collection, db)
-
-    return list(collection.find(query, projection))
-
-
-@stub.function(image=image)
-def query_one_document_db(query, projection=None, collection=None, db=None):
-    """Runs a query against the document db and returns the first result."""
-    import docstore
-
-    collection = docstore.get_collection(collection, db)
-
-    return collection.find_one(query, projection)
 
 
 def enrich_metadata(pages):

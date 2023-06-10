@@ -19,6 +19,24 @@ def drop(collection=None, db=None, client=None):
     collection.drop()
 
 
+def query_document_db(query, projection=None, collection=None, db=None):
+    """Runs a query against the document db and returns a list of results."""
+    import docstore
+
+    collection = docstore.get_collection(collection, db)
+
+    return list(collection.find(query, projection))
+
+
+def query_one_document_db(query, projection=None, collection=None, db=None):
+    """Runs a query against the document db and returns the first result."""
+    import docstore
+
+    collection = docstore.get_collection(collection, db)
+
+    return collection.find_one(query, projection)
+
+
 def get_collection(collection=None, db=None, client=None):
     """Accesses a specific collection in the document store."""
     import pymongo
