@@ -7,6 +7,7 @@ from fastapi import FastAPI
 import vecstore
 from utils import pretty_log
 
+
 # definition of our container image for jobs on Modal
 # Modal gets really powerful when you start using multiple images!
 image = modal.Image.debian_slim(  # we start from a lightweight linux distro
@@ -37,7 +38,7 @@ stub = modal.Stub(
         # this is where we add API keys, passwords, and URLs, which are stored on Modal
         modal.Secret.from_name("mongodb-fsdl"),
         modal.Secret.from_name("openai-api-key-fsdl"),
-        modal.Secret.from_name("gantry-api-key"),
+        modal.Secret.from_name("gantry-api-key-fsdl"),
     ],
     mounts=[
         # we make our local modules available to the container
@@ -275,18 +276,3 @@ def fastapi_app():
     )
 
     return mount_gradio_app(app=web_app, blocks=interface, path="/gradio")
-
-
-@stub.function(
-    image=image,
-    interactive=True,
-    shared_volumes={
-        str(VECTOR_DIR): vector_storage,
-    },
-    timeout=3600,
-)
-def debug():
-    """Convenient debugging access to Modal."""
-    import IPython
-
-    IPython.embed()
