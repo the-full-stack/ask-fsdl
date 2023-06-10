@@ -19,7 +19,7 @@ stub = modal.Stub(
 
 
 @stub.local_entrypoint()
-def main(json_path="data/videos.json"):
+def main(json_path="data/videos.json", collection=None, db=None):
     """Calls the ETL pipeline using a JSON file with YouTube video metadata.
 
     modal run etl/videos.py --json-path /path/to/json
@@ -37,7 +37,11 @@ def main(json_path="data/videos.json"):
 
     with etl.shared.stub.run():
         chunked_documents = etl.shared.chunk_into(documents, 10)
-        list(etl.shared.add_to_document_db.map(chunked_documents))
+        list(
+            etl.shared.add_to_document_db.map(
+                chunked_documents, kwargs={"db": db, "collection": collection}
+            )
+        )
 
 
 @stub.function()

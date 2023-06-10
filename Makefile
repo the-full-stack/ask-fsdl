@@ -9,7 +9,7 @@ ifeq ($(ENV), prod)
     endif
 else
     ifneq (,$(wildcard ./.env.dev))
-        include .env
+        include .env.dev
         export
 				ENV_LOADED := Loaded config from .env.dev
     endif
@@ -44,14 +44,11 @@ cli-query: modal-auth ## run a query via a CLI interface
 
 vector-index: modal-auth secrets ## sets up a FAISS vector index to the application
 	@tasks/pretty_log.sh "Assumes you've set up the document storage, see document-store"
-	modal run app.py::stub.sync_vector_db_to_doc_db
+	modal run app.py::stub.create_vector_index --db $(MONGODB_DATABASE) --collection $(MONGODB_COLLECTION)
 
 document-store: environment secrets ## creates a MongoDB collection that contains the document corpus
 	@tasks/pretty_log.sh "See docstore.py and the ETL notebook for details"
-	modal run etl/shared.py::flush_doc_db # start from scratch
-	modal run etl/videos.py --json-path data/videos.json
-	modal run etl/markdown.py --json-path data/lectures-2022.json
-	modal run etl/pdfs.py --json-path data/llm-papers.json
+	tasks/run_etl.sh --drop --db $(MONGODB_DATABASE) --collection $(MONGODB_COLLECTION)
 
 debugger: modal-auth ## starts a debugger running in our container but accessible via the terminal
 	bash modal shell app.py

@@ -66,6 +66,7 @@ def web(query: str, request_id=None):
     pretty_log(
         f"handling request with client-provided id: {request_id}"
     ) if request_id else None
+
     answer = qanda_langchain(
         query,
         request_id=request_id,
@@ -143,34 +144,36 @@ def qanda_langchain(query: str, request_id=None, with_logging: bool = False) -> 
     },
     cpu=8.0,  # use more cpu for vector storage creation
 )
-def sync_vector_db_to_doc_db():
-    """Syncs the vector index onto the document storage."""
+def create_vector_index(collection: str = None, db: str = None):
+    """Creates a vector index for a collection in the document database."""
     import docstore
 
-    document_client = docstore.connect()
-    pretty_log("connected to document DB")
+    pretty_log("connecting to document store")
+    db = docstore.get_database(db)
+    pretty_log("connected to database {db.name}")
 
-    embedding_engine = vecstore.get_embedding_engine(disallowed_special=())
-
-    docs = docstore.get_documents(document_client)
+    collection = docstore.get_collection(collection, db)
+    pretty_log("collecting documents from {collection.name}")
+    docs = docstore.get_documents(collection, db)
 
     pretty_log("splitting into bite-size chunks")
     ids, texts, metadatas = prep_documents_for_vector_storage(docs)
 
-    pretty_log(f"sending to vector store {vecstore.INDEX_NAME}")
+    pretty_log(f"sending to vector index {vecstore.INDEX_NAME}")
+    embedding_engine = vecstore.get_embedding_engine(disallowed_special=())
     vector_index = vecstore.create_vector_index(
         vecstore.INDEX_NAME, embedding_engine, texts, metadatas
     )
     vector_index.save_local(folder_path=VECTOR_DIR, index_name=vecstore.INDEX_NAME)
-    pretty_log(f"vector store {vecstore.INDEX_NAME} created")
+    pretty_log(f"vector index {vecstore.INDEX_NAME} created")
 
 
 @stub.function(image=image)
-def flush_doc_db():
-    """Empties the document storage."""
+def drop_docs(collection: str = None, db: str = None):
+    """Drops a collection from the document storage."""
     import docstore
 
-    docstore.flush()
+    docstore.drop(collection, db)
 
 
 def log_event(query: str, sources, answer: str, request_id=None):
