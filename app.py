@@ -150,10 +150,10 @@ def create_vector_index(collection: str = None, db: str = None):
 
     pretty_log("connecting to document store")
     db = docstore.get_database(db)
-    pretty_log("connected to database {db.name}")
+    pretty_log(f"connected to database {db.name}")
 
     collection = docstore.get_collection(collection, db)
-    pretty_log("collecting documents from {collection.name}")
+    pretty_log(f"collecting documents from {collection.name}")
     docs = docstore.get_documents(collection, db)
 
     pretty_log("splitting into bite-size chunks")
