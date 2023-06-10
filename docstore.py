@@ -19,7 +19,7 @@ def drop(collection=None, db=None, client=None):
     collection.drop()
 
 
-def query_document_db(query, projection=None, collection=None, db=None):
+def query(query, projection=None, collection=None, db=None):
     """Runs a query against the document db and returns a list of results."""
     import docstore
 
@@ -28,7 +28,7 @@ def query_document_db(query, projection=None, collection=None, db=None):
     return list(collection.find(query, projection))
 
 
-def query_one_document_db(query, projection=None, collection=None, db=None):
+def query_one(query, projection=None, collection=None, db=None):
     """Runs a query against the document db and returns the first result."""
     import docstore
 
