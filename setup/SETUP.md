@@ -7,6 +7,27 @@
 >
 > If you notice and resolve an error, we'd be grateful if you submitted a PR to fix it.
 
+## I. Copy env template 
+
+### 1 - Copy `.env.example` to `.env`
+
+The `Makefile` gets configuration information like usernames and secrets from a file called `.env`.
+
+We've included an empty template file, `.env.example`. Copy it to `.env` with:
+
+```bash
+cp .env.example .env
+```
+
+however if you want a dev environment you can also copy it to  `.env.dev` file.
+```bash
+cp .env.example .env.dev
+```
+
+You will need to add all the values of those API keys (see later), but for now you can leave it as is.
+Without this file the makefile will fail.
+
+
 ## I. Prepare the Python environment
 
 There are [many ways](https://xkcd.com/1987/)
@@ -96,17 +117,7 @@ However, it needs some information from you
 and some resources, like accounts on managed services,
 cannot be created automatically.
 
-### 1 - Copy `.env.example` to `.env`
-
-The `Makefile` gets configuration information like usernames and secrets from a file called `.env`.
-
-We've included an empty template file, `.env.example`.
-
-```bash
-cp .env.example .env
-```
-
-### 2 - Create a Modal account: https://modal.com/
+### 1 - Create a Modal account: https://modal.com/
 
 We'll be running our application on Modal, which provides
 serverless infrastructure for data science/ML projects
@@ -133,7 +144,7 @@ make modal-auth
 
 to confirm that you've set up your Modal account correctly.
 
-### 3 - Create an OpenAI account: https://openai.com/
+### 2 - Create an OpenAI account: https://openai.com/
 
 We use language models and embeddings from OpenAI's language-modeling-as-a-service API.
 
@@ -149,7 +160,7 @@ Make sure you set up a payment method!
 
 Add the OpenAI API key to the `.env` file.
 
-### 4 - Configure a MongoDB document store
+### 3 - Configure a MongoDB document store
 
 We store our source corpus in MongoDB,
 which is a [document database](https://www.mongodb.com/document-databases).
@@ -177,6 +188,7 @@ A document collection is like a table in a relational database.
 
 Name them `fsdl` and `ask-fsdl`, respectively.
 
+![create-database-1](./mongodb/create-database-1.png)
 ![create-database-2](./mongodb/create-database-2.png)
 
 #### d - Create a user and password
@@ -202,8 +214,6 @@ This information goes in the `.env` file.
 
 You can find that information, except for the password,
 in the "Connect" tab of the MongoDB Atlas dashboard:
-
-![create-database-1](./mongodb/create-database-1.png)
 
 ![connect-1](./mongodb/connect-1.png)
 
