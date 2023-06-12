@@ -247,7 +247,7 @@ web_app = FastAPI(docs_url=None)
 
 @web_app.get("/")
 async def root():
-    return {"message": "See /docs for the API and /gradio for the dev UI."}
+    return {"message": "See /gradio for the dev UI."}
 
 
 @web_app.get("/docs", response_class=RedirectResponse, status_code=308)
