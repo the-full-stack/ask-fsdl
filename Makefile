@@ -22,7 +22,7 @@ help: logo ## get a list of all the targets, and their short descriptions
 	@# source for the incantation: https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | awk 'BEGIN {FS = ":.*?##"}; {printf "\033[1;38;5;214m%-12s\033[0m %s\n", $$1, $$2}'
 
-it-all: logo document-store vector-index backend frontend ## runs all automated steps to get the application up and running
+it-all: logo document-store vector-index backend frontend ## runs automated deployment steps
 
 frontend: environment pulumi-config ## deploy the Discord bot server on AWS
 	pulumi -C bot/ up --yes

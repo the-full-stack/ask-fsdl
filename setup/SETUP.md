@@ -7,9 +7,7 @@
 >
 > If you notice and resolve an error, we'd be grateful if you submitted a PR to fix it.
 
-## I. Copy env template 
-
-### 1 - Copy `.env.example` to `.env`
+## I. Setup the configuration file
 
 The `Makefile` gets configuration information like usernames and secrets from a file called `.env`.
 
@@ -19,16 +17,19 @@ We've included an empty template file, `.env.example`. Copy it to `.env` with:
 cp .env.example .env
 ```
 
-however if you want a dev environment you can also copy it to  `.env.dev` file.
+If you want a dev environment you can also copy it to  `.env.dev` file.
 ```bash
 cp .env.example .env.dev
 ```
 
-You will need to add all the values of those API keys (see later), but for now you can leave it as is.
-Without this file the makefile will fail.
+To switch between the production and development environments, set the `ENV` variable to `prod` or `dev`, respectively.
 
+```bash
+export ENV=dev  # set it as an environment variable
+ENV=prod make help # or set it for each make command
+```
 
-## I. Prepare the Python environment
+## II. Prepare the Python environment
 
 There are [many ways](https://xkcd.com/1987/)
 to manage Python environments.
@@ -36,7 +37,7 @@ We use `pyenv` + `pyenv-virtualenv`,
 but you're welcome to use another method.
 
 The only restriction is that the `Makefile` presumes that `python -m pip install` works for installing into the intended environment.
-If you violate this assumption, you will not be able to use the `make` commands.
+If you violate this assumption, you will not be able to use any of the `make` commands.
 
 If you're not using `pyenv` + `pyenv-virtualenv`,
 skip to step 4.
@@ -85,6 +86,12 @@ To start using it, we need to "activate" it:
 pyenv activate ask-fsdl
 ```
 
+We've set it as the default environment for this directory with:
+```bash
+pyenv local ask-fsdl
+```
+which generates a `.python-version` file in the current directory.
+
 ### 4 - Install the dependencies
 
 Now that we have an environment for our project,
@@ -96,7 +103,8 @@ If you're interested in contributing, run
 make dev-environment
 ```
 
-otherwise, run
+which adds a few code quality checkers.
+Otherwise, run
 
 ```bash
 make environment
@@ -297,14 +305,20 @@ To run the full Discord bot, you'll need
 You'll also need to update the `.env` file with this information.
 See `.env.example` for the field names.
 
+There's a guide from
+[Real Python here](https://realpython.com/how-to-make-a-discord-bot-python/).
+
 We host our bot on AWS EC2,
 which additionally requires an AWS account.
 See [instructions here](https://aws.amazon.com/ec2/getting-started/).
+You'll also need to create an [EC2 key pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html)
+called `fsdl-webserver-keys`.
 
 The bot fits within the free allotment to new AWS accounts.
 
 We use [Pulumi](https://www.pulumi.com/)
-to automate the creation of the infrastructure on AWS.
+to automate the creation of the infrastructure on AWS --
+everything [except that EC2 key pair](https://www.pulumi.com/registry/packages/aws/api-docs/ec2/keypair/).
 You'll need a Pulumi account; see
 [instructions here](https://www.pulumi.com/docs/get-started/).
 
