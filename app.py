@@ -3,6 +3,7 @@
 For details on corpus construction, see the accompanying notebook."""
 import modal
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 
 import vecstore
 from utils import pretty_log
@@ -13,7 +14,7 @@ from utils import pretty_log
 image = modal.Image.debian_slim(  # we start from a lightweight linux distro
     python_version="3.10"  # we add a recent Python version
 ).pip_install(  # and we install the following packages:
-    "langchain~=0.0.184",
+    "langchain==0.0.184",
     # 🦜🔗: a framework for building apps with LLMs
     "openai~=0.27.7",
     # high-quality language models and cheap embeddings
@@ -23,7 +24,7 @@ image = modal.Image.debian_slim(  # we start from a lightweight linux distro
     # vector storage and similarity search
     "pymongo[srv]==3.11",
     # python client for MongoDB, our data persistence solution
-    "gradio~=3.17",
+    "gradio~=3.34",
     # simple web UIs in Python, from 🤗
     "gantry==0.5.6",
     # 🏗️: monitoring, observability, and continual improvement for ML systems
@@ -80,6 +81,7 @@ def web(query: str, request_id=None):
     shared_volumes={
         str(VECTOR_DIR): vector_storage,
     },
+    keep_warm=1,
 )
 def qanda_langchain(query: str, request_id=None, with_logging: bool = False) -> str:
     """Runs sourced Q&A for a query using LangChain.
@@ -106,9 +108,7 @@ def qanda_langchain(query: str, request_id=None, with_logging: bool = False) -> 
 
     pretty_log(f"running on query: {query}")
     pretty_log("selecting sources by similarity to query")
-    sources_and_scores = vector_index.similarity_search_with_relevance_scores(
-        query, k=3, score_threshold=0.6
-    )
+    sources_and_scores = vector_index.similarity_search_with_score(query, k=3)
 
     sources, scores = zip(*sources_and_scores)
 
@@ -182,6 +182,10 @@ def log_event(query: str, sources, answer: str, request_id=None):
 
     import gantry
 
+    if not os.environ.get("GANTRY_API_KEY"):
+        pretty_log("No Gantry API key found, skipping logging")
+        return None
+
     gantry.init(api_key=os.environ["GANTRY_API_KEY"], environment="modal")
 
     application = "ask-fsdl"
@@ -238,12 +242,18 @@ def cli(query: str):
     print(answer)
 
 
-web_app = FastAPI()
+web_app = FastAPI(docs_url=None)
 
 
 @web_app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "See /docs for the API and /gradio for the dev UI."}
+
+
+@web_app.get("/docs", response_class=RedirectResponse, status_code=308)
+async def redirect_docs():
+    """Redirects to the Gradio subapi docs."""
+    return "/gradio/docs"
 
 
 @stub.function(
@@ -251,12 +261,13 @@ async def root():
     shared_volumes={
         str(VECTOR_DIR): vector_storage,
     },
+    keep_warm=1,
 )
 @modal.asgi_app(label="ask-fsdl")
 def fastapi_app():
     """A simple Gradio interface for debugging."""
     import gradio as gr
-    from gradio.routes import mount_gradio_app
+    from gradio.routes import App
 
     def chain_with_logging(*args, **kwargs):
         return qanda_langchain(*args, with_logging=True, **kwargs)
@@ -278,4 +289,18 @@ def fastapi_app():
         allow_flagging="never",
     )
 
-    return mount_gradio_app(app=web_app, blocks=interface, path="/gradio")
+    interface.dev_mode = False
+    interface.config = interface.get_config_file()
+    interface.validate_queue_settings()
+    gradio_app = App.create_app(
+        interface, app_kwargs={"docs_url": "/docs", "title": "ask-FSDL"}
+    )
+
+    @web_app.on_event("startup")
+    async def start_queue():
+        if gradio_app.get_blocks().enable_queue:
+            gradio_app.get_blocks().startup_events()
+
+    web_app.mount("/gradio", gradio_app)
+
+    return web_app
