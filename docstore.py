@@ -69,11 +69,16 @@ def get_database(db=None, client=None):
 def connect(user=None, password=None, uri=None):
     """Connects to the document store, here MongoDB."""
     import os
+    import urllib
 
     import pymongo
 
     mongodb_user = user or os.environ["MONGODB_USER"]
+    mongodb_user = urllib.parse.quote_plus(mongodb_user)
+
     mongodb_password = password or os.environ["MONGODB_PASSWORD"]
+    mongodb_password = urllib.parse.quote_plus(mongodb_password)
+
     mongodb_uri = uri or os.environ["MONGODB_URI"]
 
     connection_string = f"mongodb+srv://{mongodb_user}:{mongodb_password}@{mongodb_uri}/?retryWrites=true&w=majority"
