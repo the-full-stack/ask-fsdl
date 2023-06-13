@@ -132,7 +132,8 @@ def qanda_langchain(query: str, request_id=None, with_logging: bool = False) -> 
         print(answer)
         pretty_log("logging results to gantry")
         record_key = log_event(query, sources, answer, request_id=request_id)
-        pretty_log(f"logged to gantry with key {record_key}")
+        if record_key:
+            pretty_log(f"logged to gantry with key {record_key}")
 
     return answer
 
@@ -272,11 +273,21 @@ def fastapi_app():
     def chain_with_logging(*args, **kwargs):
         return qanda_langchain(*args, with_logging=True, **kwargs)
 
+    inputs = gr.TextArea(
+        label="Question",
+        value="What is zero-shot chain-of-thought prompting?",
+        show_label=True,
+    )
+    outputs = gr.TextArea(
+        label="Answer", value="The answer will appear here.", show_label=True
+    )
+
     interface = gr.Interface(
         fn=chain_with_logging,
-        inputs="text",
-        outputs="text",
+        inputs=inputs,
+        outputs=outputs,
         title="Ask Questions About The Full Stack.",
+        description="Get answers with sources from an LLM.",
         examples=[
             "What is zero-shot chain-of-thought prompting?",
             "Would you rather fight 100 LLaMA-sized GPT-4s or 1 GPT-4-sized LLaMA?",
@@ -287,6 +298,8 @@ def fastapi_app():
             "What is the best way to learn about ML?",
         ],
         allow_flagging="never",
+        theme=gr.themes.Default(radius_size="none", text_size="lg"),
+        article="# GitHub Repo: https://github.com/the-full-stack/ask-fsdl",
     )
 
     interface.dev_mode = False
