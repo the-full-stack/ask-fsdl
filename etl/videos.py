@@ -44,7 +44,9 @@ def main(json_path="data/videos.json", collection=None, db=None):
         )
 
 
-@stub.function()
+@stub.function(
+    retries=modal.Retries(max_retries=3, backoff_coefficient=2.0, initial_delay=5.0)
+)
 def extract_subtitles(video_info):
     video_id, video_title = video_info["id"], video_info["title"]
     subtitles = get_transcript(video_id)
