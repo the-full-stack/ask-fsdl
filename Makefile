@@ -25,6 +25,7 @@ help: logo ## get a list of all the targets, and their short descriptions
 it-all: logo document-store vector-index backend frontend ## runs automated deployment steps
 
 frontend: environment pulumi-config ## deploy the Discord bot server on AWS
+	@tasks/pretty_log.sh "WARNING: support for deploying the bot on AWS is experimental, expect sharp edges"
 	pulumi -C bot/ up --yes
 	@tasks/pretty_log.sh "Allow 1-3 minutes for bot to start up"
 	@tasks/pretty_log.sh "for startup debug logs, run sudo cat /var/log/cloud-init-output.log on the instance"

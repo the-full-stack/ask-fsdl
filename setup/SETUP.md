@@ -1,7 +1,8 @@
 # Setup from scratch
 
-> These instructions describe the process for setting up this project from scratch.
-> At time of writing, they cover from Python environment setup through deployment of the backend.
+> These instructions detail each step of the process for setting up this project from scratch.
+> They cover Python environment setup up through deployment of the backend.
+> They do not cover Python installation or creation of the Discord bot.
 >
 > They are a community contribution (thanks [@candidosales](https://github.com/candidosales)!) and are provided on a best-effort basis.
 >
@@ -321,6 +322,8 @@ to automate the creation of the infrastructure on AWS --
 everything [except that EC2 key pair](https://www.pulumi.com/registry/packages/aws/api-docs/ec2/keypair/).
 You'll need a Pulumi account; see
 [instructions here](https://www.pulumi.com/docs/get-started/).
+You'll also need to
+[install Pulumi](https://www.pulumi.com/docs/install/).
 
 Once you have all of that set up,
 these make commands will get you up and running:

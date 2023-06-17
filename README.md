@@ -18,6 +18,15 @@ So the resulting application is great at answering questions like
 - Should I use a dedicated vector store for my embeddings?
 - What is zero-shot chain-of-thought reasoning?
 
+## Run it yourself
+
+Thanks to community contributions,
+we can share a best-effort guide to running the application yourself
+[here](./setup/).
+
+This project is under rapid development, so expect sharp edges
+while setting it up in your environment.
+
 ## Stack
 
 We use [`langchain`](https://github.com/hwchase17/langchain)
@@ -53,9 +62,3 @@ which we provision and configure with
 We use
 [Gantry](https://gantry.io)
 to monitor model behvaior in production and collect feedback from users.
-
-## Run it yourself
-
-Thanks to community contributions,
-we can share a best-effort guide to running the application yourself
-[here](./setup/).
