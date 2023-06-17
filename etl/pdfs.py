@@ -55,7 +55,15 @@ def main(json_path="data/llm-papers.json", collection=None, db=None):
         )
 
 
-@stub.function(image=image)
+@stub.function(
+    image=image,
+    # we can automatically retry execution of Modal functions on failure
+    # -- this retry policy does exponential backoff
+    retries=modal.Retries(backoff_coefficient=2.0, initial_delay=5.0, max_retries=3),
+    # we can also limit the number of concurrent executions of a Modal function
+    # -- here we limit to 50 so we don't hammer the arXiV API too hard
+    concurrency_limit=50,
+)
 def extract_pdf(paper_data):
     """Extracts the text from a PDF and adds metadata."""
     import logging
@@ -85,7 +93,15 @@ def extract_pdf(paper_data):
 
     if "arxiv" in pdf_url:
         arxiv_id = extract_arxiv_id_from_url(pdf_url)
-        result = next(arxiv.Search(id_list=[arxiv_id], max_results=1).results())
+        # create an arXiV database client with a 5 second delay between requests
+        client = arxiv.Client(page_size=1, delay_seconds=5, num_retries=5)
+        # describe a search of arXiV's database
+        search_query = arxiv.Search(id_list=[arxiv_id], max_results=1)
+        try:
+            # execute the search with the client and get the first result
+            result = next(client.results(search_query))
+        except ConnectionResetError as e:
+            raise Exception("Triggered request limit on arxiv.org, retrying") from e
         metadata = {
             "arxiv_id": arxiv_id,
             "title": result.title,
