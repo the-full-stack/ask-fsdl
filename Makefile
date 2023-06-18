@@ -91,8 +91,8 @@ ifndef HAS_PULUMI
 endif
 	@tasks/pretty_log.sh "For more on setting up a bot account in Discord, see https://discordpy.readthedocs.io/en/stable/discord.html"
 	@pulumi -C bot/ login
-	$(if $(filter dev, $(value ENV)),pulumi -C bot/ stack select dev, \
-		pulumi -C bot/ stack select prod)
+	tasks/pulumi_init.sh $(ENV)
+	pulumi -C bot/ stack select $(ENV)
 	@$(if $(value MODAL_USER_NAME),, \
 		$(error MODAL_USER_NAME is not set. Please set it before running this target.))
 	@$(if $(value DISCORD_AUTH),, \
@@ -103,6 +103,7 @@ endif
 	@pulumi -C bot/ config set --secret DISCORD_AUTH $(DISCORD_AUTH)
 	@pulumi -C bot/ config set DISCORD_GUILD_ID $(DISCORD_GUILD_ID)
 	@$(if $(value DISCORD_MAINTAINER_ID),pulumi -C bot/ config set --secret DISCORD_MAINTAINER_ID $(DISCORD_MAINTAINER_ID),)
+	@pulumi -C bot/ config set aws:region us-west-2
 	pulumi -C bot/ config
 
 environment: ## installs required environment for deployment and corpus generation
