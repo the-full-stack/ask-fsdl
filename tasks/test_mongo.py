@@ -7,7 +7,7 @@ import os
 from run_etl import (
     modal_run,
     drop_collection,
-)  # replace 'your_main_script' with the name of your script
+)
 
 
 # setup fixture for MongoDB connection
@@ -45,7 +45,7 @@ def test_mongo_connection(mongodb_connection):
 def test_mongo_permissions(mongodb_connection):
     try:
         mongodb_connection.insert_one({"test_key": "test_value"})
-        # mongodb_connection.delete_one({"test_key": "test_value"})
+        mongodb_connection.delete_one({"test_key": "test_value"})
     except Exception as e:
         pytest.fail(f"MongoDB permission test failed with error: {str(e)}")
 
