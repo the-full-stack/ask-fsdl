@@ -56,7 +56,7 @@ vector-index: modal-auth secrets ## sets up a FAISS vector index to the applicat
 
 document-store: environment secrets ## creates a MongoDB collection that contains the document corpus
 	@tasks/pretty_log.sh "See docstore.py and the ETL notebook for details"
-	tasks/run_etl.sh --drop --db $(MONGODB_DATABASE) --collection $(MONGODB_COLLECTION)
+	tasks/run_etl.py --drop --db $(MONGODB_DATABASE) --collection $(MONGODB_COLLECTION)
 
 debugger: modal-auth ## starts a debugger running in our container but accessible via the terminal
 	bash modal shell app.py
