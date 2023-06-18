@@ -1,6 +1,7 @@
 # provide ENV=dev to use .env.dev instead of .env
 # and to work in the Pulumi dev stack
 ENV_LOADED :=
+
 ifeq ($(ENV), prod)
     ifneq (,$(wildcard ./.env))
         include .env
@@ -14,6 +15,8 @@ else
 				ENV_LOADED := Loaded config from .env.dev
     endif
 endif
+
+HAS_PULUMI := $(shell command -v pulumi 2> /dev/null)
 
 .PHONY: help
 .DEFAULT_GOAL := help
@@ -30,6 +33,10 @@ frontend: environment pulumi-config ## deploy the Discord bot server on AWS
 	@tasks/pretty_log.sh "Allow 1-3 minutes for bot to start up"
 	@tasks/pretty_log.sh "for startup debug logs, run sudo cat /var/log/cloud-init-output.log on the instance"
 	@tasks/pretty_log.sh "for server logs, run tail -f /home/ec2-user/ask-fsdl/bot/log.out on the instance"
+
+no-frontend: environment pulumi-config ## un-deploy the Discord bot server
+	@tasks/pretty_log.sh "WARNING: support for deploying the bot on AWS is experimental, expect sharp edges"
+	PULUMI_SKIP_UPDATE_CHECK=1 pulumi -C bot/ destroy
 
 local-frontend: environment ## run the Discord bot server locally
 	@tasks/pretty_log.sh "Assumes you've set up your bot in Discord, see https://discordpy.readthedocs.io/en/stable/discord.html"
@@ -77,8 +84,13 @@ modal-token: environment ## creates token ID and secret for authentication with 
 	modal token new
 	@tasks/pretty_log.sh "Copy the token info from the file mentioned above into .env"
 
+pulumi-config: export PULUMI_SKIP_UPDATE_CHECK=1
 pulumi-config:  ## adds secrets and config from env file to Pulumi
+ifndef HAS_PULUMI
+		$(error "pulumi not found. Please install pulumi before running this target.")
+endif
 	@tasks/pretty_log.sh "For more on setting up a bot account in Discord, see https://discordpy.readthedocs.io/en/stable/discord.html"
+	@pulumi -C bot/ login
 	$(if $(filter dev, $(value ENV)),pulumi -C bot/ stack select dev, \
 		pulumi -C bot/ stack select prod)
 	@$(if $(value MODAL_USER_NAME),, \
