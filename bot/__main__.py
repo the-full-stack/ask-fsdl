@@ -21,7 +21,7 @@ cfg.require_secret("DISCORD_AUTH")
 
 GIT_ORG = "the-full-stack"
 GIT_REPO = "ask-fsdl"
-GIT_BRANCH = "main" if STACK_NAME == "prod" else "charles/pulumi"
+GIT_BRANCH = "main"
 GIT_URI = f"https://github.com/{GIT_ORG}/{GIT_REPO}.git"
 
 # allow inbound SSH access
