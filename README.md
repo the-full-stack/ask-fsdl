@@ -18,14 +18,22 @@ So the resulting application is great at answering questions like
 - Should I use a dedicated vector store for my embeddings?
 - What is zero-shot chain-of-thought reasoning?
 
-## Run it yourself
+## EXPERIMENTAL: run it yourself
+
+This project is under rapid development, so expect sharp edges
+while setting it up in your environment.
 
 Thanks to community contributions,
 we can share a best-effort guide to running the application yourself
 [here](./setup/).
 
-This project is under rapid development, so expect sharp edges
-while setting it up in your environment.
+Note that this application uses cloud services.
+For most of these services, regular usage of the app will fall under the free tier.
+However, OpenAI API calls can easily become expensive,
+so make sure to se
+[usage limits](https://platform.openai.com/account/billing/limits)
+to prevent surprise bills.
+
 
 ## Stack
 
