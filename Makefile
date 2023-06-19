@@ -59,7 +59,7 @@ document-store: environment secrets ## creates a MongoDB collection that contain
 	tasks/run_etl.sh --drop --db $(MONGODB_DATABASE) --collection $(MONGODB_COLLECTION)
 
 debugger: modal-auth ## starts a debugger running in our container but accessible via the terminal
-	bash modal shell app.py
+	modal shell app.py
 
 secrets: modal-auth  ## pushes secrets from .env to Modal
 	@$(if $(value OPENAI_API_KEY),, \
