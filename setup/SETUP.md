@@ -1,16 +1,20 @@
 # Setup from scratch
 
-> These instructions detail each step of the process for setting up this project from scratch.
+> These instructions are a community contribution
+> (thanks [@candidosales](https://github.com/candidosales)!)>
+> and are provided on a best-effort basis.
+>
+> These instructions detail steps in the process for setting up this project from scratch.
 > They cover Python environment setup up through deployment of the backend.
 > They do not cover Python installation or creation of the Discord bot.
 >
-> They are a community contribution (thanks [@candidosales](https://github.com/candidosales)!) and are provided on a best-effort basis.
->
-> If you notice and resolve an error, we'd be grateful if you submitted a PR to fix it.
+> If you notice and resolve an error during setup, we'd be grateful if you submitted a PR to fix it
+> and these docs.
 
 ## I. Setup the configuration file
 
-The `Makefile` gets configuration information like usernames and secrets from a file called `.env`.
+The `Makefile` gets configuration information like usernames and secrets from
+[dotenv files](https://www.dotenv.org/docs/security/env.html).
 
 We've included an empty template file, `.env.example`. Copy it to `.env` with:
 
@@ -18,7 +22,7 @@ We've included an empty template file, `.env.example`. Copy it to `.env` with:
 cp .env.example .env
 ```
 
-If you want a dev environment you can also copy it to  `.env.dev` file.
+If you want a dev environment you can also copy it to `.env.dev`:
 ```bash
 cp .env.example .env.dev
 ```
@@ -163,11 +167,11 @@ Sign up [here](https://platform.openai.com/signup?launch) and get an API key.
 
 Make sure you set up a payment method!
 
-> Creating the embeddings is cheap, on the order of a few cents.
+> Creating the embeddings is cheap, on the order of a fifty cents.
 >
 > But _each query of the chatbot_ costs a few cents, so you might also want to set a limit on your account.
 
-Add the OpenAI API key to the `.env` file.
+Add the OpenAI API key to the dotenv file.
 
 ### 3 - Configure a MongoDB document store
 
@@ -219,7 +223,7 @@ it needs to know a few things:
 2. The name of a database user with read/write access to the database and its collections
 3. The password for that user
 
-This information goes in the `.env` file.
+This information goes in the dotenv file.
 
 You can find that information, except for the password,
 in the "Connect" tab of the MongoDB Atlas dashboard:
@@ -233,7 +237,7 @@ in the "Connect" tab of the MongoDB Atlas dashboard:
 ### 5 - Push all of the configuration information to Modal
 
 For the application to run,
-it needs the information in the `.env` file.
+it needs the information in the dotenv file.
 
 We push that information to Modal with
 
