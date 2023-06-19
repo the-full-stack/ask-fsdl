@@ -19,7 +19,7 @@ def mongodb_connection():
     collection_name = os.environ.get("MONGODB_COLLECTION")
     mongo_user = os.environ.get("MONGODB_USER")
     mongo_password = os.environ.get("MONGODB_PASSWORD")
-    mongo_uri = os.environ.get("MONGODB_DB_URI")
+    mongo_uri = os.environ.get("MONGODB_URI")
     mongo_uri_template = "mongodb+srv://<user>:<password>@<db_uri>/"
 
     # Replace placeholders with actual values
