@@ -8,7 +8,7 @@ GANTRY_API_KEY=${GANTRY_API_KEY:-""}
 set --
 source tasks/pretty_log.sh
 
-modal secret create mongodb-fsdl MONGODB_USER="$MONGODB_USER" MONGODB_URI="$MONGODB_URI" MONGODB_PASSWORD="$MONGODB_PASSWORD"
+modal secret create mongodb-fsdl MONGODB_USER="$MONGODB_USER" MONGODB_HOST="$MONGODB_HOST" MONGODB_PASSWORD="$MONGODB_PASSWORD"
 modal secret create openai-api-key-fsdl OPENAI_API_KEY="$OPENAI_API_KEY"
 
 if [ "$GANTRY_API_KEY" = "" ]; then
