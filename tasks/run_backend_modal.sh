@@ -12,8 +12,8 @@ pretty_log "Setting up backend for $env"
 
 if [ "$env" = "dev" ]; then
     pretty_log "Testing UI interface will become available at /gradio route of app"
-    bash modal serve app.py
+    modal serve app.py
 else
     pretty_log "Deploying app to $env"
-    bash modal deploy app.py
+    modal deploy app.py
 fi
