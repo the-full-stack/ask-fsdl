@@ -79,9 +79,9 @@ def connect(user=None, password=None, uri=None):
     mongodb_password = password or os.environ["MONGODB_PASSWORD"]
     mongodb_password = urllib.parse.quote_plus(mongodb_password)
 
-    mongodb_uri = uri or os.environ["MONGODB_URI"]
+    mongodb_host = uri or os.environ["MONGODB_HOST"]
 
-    connection_string = f"mongodb+srv://{mongodb_user}:{mongodb_password}@{mongodb_uri}/?retryWrites=true&w=majority"
+    connection_string = f"mongodb+srv://{mongodb_user}:{mongodb_password}@{mongodb_host}/?retryWrites=true&w=majority"
 
     client = pymongo.MongoClient(connection_string, connect=True, appname="ask-fsdl")
 

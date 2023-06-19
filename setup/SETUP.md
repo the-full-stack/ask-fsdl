@@ -207,6 +207,10 @@ Name them `fsdl` and `ask-fsdl`, respectively.
 #### d - Create a user and password
 
 See instructions [here](https://www.youtube.com/watch?v=5-hybmPlZ_U&t=11s).
+Add the username and password to the dotenv file.
+
+Make sure you save the password somewhere safe as well,
+like a password manager.
 
 #### e - Enable network access
 
@@ -217,15 +221,26 @@ See instructions [here](https://www.youtube.com/watch?v=5-hybmPlZ_U&t=11s).
 #### f - Get the information required to connect to the database
 
 To allow the application to connect to the database,
-it needs to know a few things:
+we need to construct a
+[connection string](https://www.mongodb.com/docs/manual/reference/connection-string/),
+a
+[URI](https://en.wikipedia.org/wiki/Uniform_Resource_Identifier)
+for connecting to databases.
 
-1. A "URI" that tells it where the database is
+To construct the connection string,
+we need three pieces of information:
+
+1. The name of the host where the database is running
 2. The name of a database user with read/write access to the database and its collections
 3. The password for that user
 
 This information goes in the dotenv file.
+You should have already entered the username and password
+while creating the user.
+If not, you'll need to retrieve the password
+from wherever you stored it.
 
-You can find that information, except for the password,
+You can find the rest of the information
 in the "Connect" tab of the MongoDB Atlas dashboard:
 
 ![connect-1](./mongodb/connect-1.png)

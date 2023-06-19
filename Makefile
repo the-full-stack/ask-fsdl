@@ -42,19 +42,19 @@ local-frontend: environment ## run the Discord bot server locally
 	@tasks/pretty_log.sh "Assumes you've set up your bot in Discord, see https://discordpy.readthedocs.io/en/stable/discord.html"
 	python bot/run.py --dev
 
-backend: modal-auth ## deploy the Q&A backend on Modal
+backend: secrets ## deploy the Q&A backend on Modal
 	@tasks/pretty_log.sh "Assumes you've set up the vector index, see vector-index"
 	bash tasks/run_backend_modal.sh $(ENV)
 
-cli-query: modal-auth ## run a query via a CLI interface
+cli-query: secrets ## run a query via a CLI interface
 	@tasks/pretty_log.sh "Assumes you've set up the vector index"
 	modal run app.py::stub.cli --query "${QUERY}"
 
-vector-index: modal-auth secrets ## sets up a FAISS vector index to the application
+vector-index: secrets ## sets up a FAISS vector index to the application
 	@tasks/pretty_log.sh "Assumes you've set up the document storage, see document-store"
 	modal run app.py::stub.create_vector_index --db $(MONGODB_DATABASE) --collection $(MONGODB_COLLECTION)
 
-document-store: environment secrets ## creates a MongoDB collection that contains the document corpus
+document-store: secrets ## creates a MongoDB collection that contains the document corpus
 	@tasks/pretty_log.sh "See docstore.py and the ETL notebook for details"
 	tasks/run_etl.sh --drop --db $(MONGODB_DATABASE) --collection $(MONGODB_COLLECTION)
 
@@ -64,8 +64,8 @@ debugger: modal-auth ## starts a debugger running in our container but accessibl
 secrets: modal-auth  ## pushes secrets from .env to Modal
 	@$(if $(value OPENAI_API_KEY),, \
 		$(error OPENAI_API_KEY is not set. Please set it before running this target.))
-	@$(if $(value MONGODB_URI),, \
-		$(error MONGODB_URI is not set. Please set it before running this target.))
+	@$(if $(value MONGODB_HOST),, \
+		$(error MONGODB_HOST is not set. Please set it before running this target.))
 	@$(if $(value MONGODB_USER),, \
 		$(error MONGODB_USER is not set. Please set it before running this target.))
 	@$(if $(value MONGODB_PASSWORD),, \
