@@ -10,7 +10,10 @@
 
 ## I. Setup the configuration file
 
-The `Makefile` gets configuration information like usernames and secrets from a file called `.env`.
+The `Makefile` gets configuration information like usernames and secrets from a file called `.env` or `.env.dev`.
+It decides which to use based on the `ENV` environment variable.
+
+If you don't have one of these files, you can create one from the template:
 
 We've included an empty template file, `.env.example`. Copy it to `.env` with:
 
@@ -203,6 +206,7 @@ Name them `fsdl` and `ask-fsdl`, respectively.
 #### d - Create a user and password
 
 See instructions [here](https://www.youtube.com/watch?v=5-hybmPlZ_U&t=11s).
+Copy the password to the your active `.env`file ( `.env` and/or  `.env.dev`)
 
 #### e - Enable network access
 
@@ -230,10 +234,18 @@ in the "Connect" tab of the MongoDB Atlas dashboard:
 
 ![connect-3](./mongodb/connect-3.png)
 
+> **Note:** This is an important note.
+Copy the connection string it should look like this 
+mongodb+srv://the_name_you_picked_for_the_db:<password>@fsdl.chjrrhb.mongodb.net/
+Then go to the active  `.env`file ( `.env` and/or  `.env.dev`) and add the values.
+For the above example it should be:
+MONGODB_URI=fsdl.chjrrhb.mongodb.net
+MONGODB_USER=the_name_you_picked_for_the_db
+
 ### 5 - Push all of the configuration information to Modal
 
 For the application to run,
-it needs the information in the `.env` file.
+it needs the information in the active `.env` file.
 
 We push that information to Modal with
 
