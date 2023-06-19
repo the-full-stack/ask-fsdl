@@ -286,7 +286,7 @@ You're now ready to ask the chatbot a question!
 Use this command, and feel free to substitute your own query.
 
 ```bash
-make cli-query $QUERY="What can you do?"
+make cli-query QUERY="What can you do?"
 ```
 
 You can turn this into a web service with
