@@ -66,7 +66,7 @@ We use Python 3.10 and later in our development.
 You can install it with:
 
 ```bash
-pyenv install 3.10
+pyenv install 3.10.9
 ```
 
 ### 3 - Create and activate the virtual environment
