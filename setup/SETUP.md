@@ -23,6 +23,7 @@ cp .env.example .env
 ```
 
 If you want a dev environment you can also copy it to `.env.dev`:
+
 ```bash
 cp .env.example .env.dev
 ```
@@ -92,9 +93,11 @@ pyenv activate ask-fsdl
 ```
 
 We've set it as the default environment for this directory with:
+
 ```bash
 pyenv local ask-fsdl
 ```
+
 which generates a `.python-version` file in the current directory.
 
 ### 4 - Install the dependencies
@@ -316,49 +319,7 @@ make backend
 
 ## V. Next steps
 
-To run the full Discord bot, you'll need
-
-1. A Discord account
-2. A Discord server that your bot can join
-3. A Discord bot account
-
-You'll also need to update the `.env` file with this information.
-See `.env.example` for the field names.
-
-There's a guide from
-[Real Python here](https://realpython.com/how-to-make-a-discord-bot-python/).
-
-We host our bot on AWS EC2,
-which additionally requires an AWS account.
-See [instructions here](https://aws.amazon.com/ec2/getting-started/).
-You'll also need to create an [EC2 key pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html)
-called `fsdl-webserver-keys`.
-
-The bot fits within the free allotment to new AWS accounts.
-
-We use [Pulumi](https://www.pulumi.com/)
-to automate the creation of the infrastructure on AWS --
-everything [except that EC2 key pair](https://www.pulumi.com/registry/packages/aws/api-docs/ec2/keypair/).
-You'll need a Pulumi account; see
-[instructions here](https://www.pulumi.com/docs/get-started/).
-You'll also need to
-[install Pulumi](https://www.pulumi.com/docs/install/).
-
-Once you have all of that set up,
-these make commands will get you up and running:
-
-```bash
-make backend
-make frontend
-```
-
-You can also do the whole setup at once with
-
-```bash
-make it-all
-```
-
-Note that this wipes the existing database and vector index!
+### TODO: add instructions for running the Discord bot
 
 ## Troubleshooting
 
