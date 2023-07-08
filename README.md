@@ -34,7 +34,6 @@ so make sure to se
 [usage limits](https://platform.openai.com/account/billing/limits)
 to prevent surprise bills.
 
-
 ## Stack
 
 We use [`langchain`](https://github.com/hwchase17/langchain)
@@ -59,13 +58,11 @@ we use [Gradio](https://gradio.app/).
 This UI is great for quick tests without deploying a full frontend
 but with a better developer experience than curl-ing from the command line.
 
-We host the Discord bot,
-written in [`discord.py`](https://discordpy.readthedocs.io/en/stable/),
-on a free-tier
-[AWS EC2](https://aws.amazon.com/ec2/)
-instance,
-which we provision and configure with
-[Pulumi](https://www.pulumi.com/).
+We host the Discord bot on
+[Modal](https://modal.com/)
+as well, relying on Discord's
+[interactions endpoints](https://discord.com/developers/docs/tutorials/upgrading-to-application-commands#adding-an-interactions-endpoint-url)
+to run the bot serverlessly.
 
 We use
 [Gantry](https://gantry.io)
