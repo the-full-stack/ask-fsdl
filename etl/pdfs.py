@@ -4,8 +4,8 @@ import etl.shared
 
 # extend the shared image with PDF-handling dependencies
 image = etl.shared.image.pip_install(
-    "arxiv~=1.4",
-    "pypdf~=3.8",
+    "arxiv==1.4.7",
+    "pypdf==3.8.1",
 )
 
 stub = modal.Stub(
@@ -87,8 +87,10 @@ def extract_pdf(paper_data):
         return []
 
     documents = [document.dict() for document in documents]
-    for document in documents:  # rename page_content to text
-        document["text"] = document["page_content"]
+    for document in documents:  # rename page_content to text, handle non-unicode data
+        document["text"] = (
+            document["page_content"].encode("utf-8", errors="replace").decode()
+        )
         document.pop("page_content")
 
     if "arxiv" in pdf_url:

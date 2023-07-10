@@ -43,7 +43,7 @@ def enrich_metadata(pages):
 
     for page in pages:
         m = hashlib.sha256()
-        m.update(page["text"].encode("utf-8"))
+        m.update(page["text"].encode("utf-8", "replace"))
         page["metadata"]["sha256"] = m.hexdigest()
         if page["metadata"].get("is_endmatter"):
             page["metadata"]["ignore"] = True
