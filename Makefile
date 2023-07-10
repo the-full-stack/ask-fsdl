@@ -24,11 +24,11 @@ help: logo ## get a list of all the targets, and their short descriptions
 
 it-all: logo document-store vector-index backend frontend ## runs automated deployment steps
 
-frontend: environment slash-command ## deploy the Discord bot on Modal
+frontend: slash-command ## deploy the Discord bot on Modal
 	@tasks/pretty_log.sh "Assumes you've set up your bot in Discord"
-	# TODO: modal deploy, point to Discord dev portal
+	bash tasks/run_frontend_modal.sh $(ENV)
 
-slash-command: environment ## register the bot's slash command with Discord
+slash-command: frontend-secrets ## register the bot's slash command with Discord
 	modal run bot::create_slash_command
 	@tasks/pretty_log.sh "Slash command registered."
 
@@ -51,7 +51,13 @@ document-store: secrets ## creates a MongoDB collection that contains the docume
 debugger: modal-auth ## starts a debugger running in our container but accessible via the terminal
 	modal shell app.py
 
-# TODO: backend-secrets separate from frontend secrets?
+frontend-secrets: modal-auth
+	@$(if $(value DISCORD_AUTH),, \
+		$(error DISCORD_AUTH is not set. Please set it before running this target.))
+	@$(if $(value DISCORD_PUBLIC_KEY),, \
+		$(error DISCORD_PUBLIC_KEY is not set. Please set it before running this target.))
+	bash tasks/send_frontend_secrets_to_modal.sh
+
 secrets: modal-auth  ## pushes secrets from .env to Modal
 	@$(if $(value OPENAI_API_KEY),, \
 		$(error OPENAI_API_KEY is not set. Please set it before running this target.))
