@@ -5,6 +5,7 @@ import os
 import aiohttp
 import json
 
+import modal
 from modal import Image, Secret, Stub, asgi_app
 
 image = Image.debian_slim(python_version="3.10").pip_install("pynacl", "requests")
@@ -31,9 +32,12 @@ class DiscordApplicationCommandOptionType(Enum):
     # keep one instance warm to reduce latency, consuming ~0.2 GB while idle
     # this costs ~$3/month at current prices, so well within $10/month free tier credit
     keep_warm=1,
+    mounts=modal.create_package_mounts(["utils"])
 )
 @asgi_app(label="askfsdl-discord-bot")
 def app() -> FastAPI:
+    from utils import pretty_log
+
     app = FastAPI()
 
     app.add_middleware(
@@ -63,6 +67,7 @@ def app() -> FastAPI:
             user_id = data["member"]["user"]["id"]
 
             question = data["data"]["options"][0]["value"]
+            pretty_log(question)
 
             # kick off our actual response in the background
             respond.spawn(
@@ -82,7 +87,9 @@ def app() -> FastAPI:
     return app
 
 
-@stub.function()
+@stub.function(
+    mounts=modal.create_package_mounts(["utils"])
+)
 async def respond(
     question: str,
     application_id: str,
@@ -92,14 +99,17 @@ async def respond(
     """Respond to a user's question by passing it to the language model."""
     import modal
 
+    from utils import pretty_log
+
     try:
         raw_response = await modal.Function.lookup(
             "ask-fsdl", "qanda_langchain"
         ).call.aio(question, request_id=interaction_token, with_logging=True)
+        pretty_log(raw_response)
 
         response = construct_response(raw_response, user_id, question)
     except Exception as e:
-        print("Error:", e)
+        pretty_log("Error", e)
         response = construct_error_message(user_id)
     await send_response(response, application_id, interaction_token)
 
@@ -124,7 +134,7 @@ async def send_response(
 
     async with aiohttp.ClientSession() as session:
         async with session.post(interaction_url, data=payload) as resp:
-            print(await resp.text())
+            await resp.text()
 
 
 async def verify(request: Request):
@@ -185,10 +195,9 @@ def construct_error_message(user_id: str) -> str:
     )
 
     if os.getenv("DISCORD_MAINTAINER_ID"):
-        print(os.getenv("DISCORD_MAINTAINER_ID"))
         error_message += f" I've let <@{os.getenv('DISCORD_MAINTAINER_ID')}> know."
     else:
-        print("No maintainer ID set")
+        pretty_log("No maintainer ID set")
         error_message += " Please try again later."
 
     error_message += "*"
@@ -201,7 +210,7 @@ def create_slash_command(force: bool = False):
     import os
     import requests
 
-    BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+    BOT_TOKEN = os.getenv("DISCORD_AUTH")
     CLIENT_ID = os.getenv("DISCORD_CLIENT_ID")
 
     headers = {
