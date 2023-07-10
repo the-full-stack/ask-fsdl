@@ -1,5 +1,4 @@
 # provide ENV=dev to use .env.dev instead of .env
-# and to work in the Pulumi dev stack
 ENV_LOADED :=
 
 ifeq ($(ENV), prod)
@@ -16,8 +15,6 @@ else
     endif
 endif
 
-HAS_PULUMI := $(shell command -v pulumi 2> /dev/null)
-
 .PHONY: help
 .DEFAULT_GOAL := help
 
@@ -27,20 +24,13 @@ help: logo ## get a list of all the targets, and their short descriptions
 
 it-all: logo document-store vector-index backend frontend ## runs automated deployment steps
 
-frontend: environment pulumi-config ## deploy the Discord bot server on AWS
-	@tasks/pretty_log.sh "WARNING: support for deploying the bot on AWS is experimental, expect sharp edges"
-	pulumi -C bot/ up --yes
-	@tasks/pretty_log.sh "Allow 1-3 minutes for bot to start up"
-	@tasks/pretty_log.sh "for startup debug logs, run sudo cat /var/log/cloud-init-output.log on the instance"
-	@tasks/pretty_log.sh "for server logs, run tail -f /home/ec2-user/ask-fsdl/bot/log.out on the instance"
+frontend: slash-command ## deploy the Discord bot on Modal
+	@tasks/pretty_log.sh "Assumes you've set up your bot in Discord"
+	bash tasks/run_frontend_modal.sh $(ENV)
 
-no-frontend: environment pulumi-config ## un-deploy the Discord bot server
-	@tasks/pretty_log.sh "WARNING: support for deploying the bot on AWS is experimental, expect sharp edges"
-	PULUMI_SKIP_UPDATE_CHECK=1 pulumi -C bot/ destroy
-
-local-frontend: environment ## run the Discord bot server locally
-	@tasks/pretty_log.sh "Assumes you've set up your bot in Discord, see https://discordpy.readthedocs.io/en/stable/discord.html"
-	python bot/run.py --dev
+slash-command: frontend-secrets ## register the bot's slash command with Discord
+	modal run bot::create_slash_command
+	@tasks/pretty_log.sh "Slash command registered."
 
 backend: secrets ## deploy the Q&A backend on Modal
 	@tasks/pretty_log.sh "Assumes you've set up the vector index, see vector-index"
@@ -60,6 +50,13 @@ document-store: secrets ## creates a MongoDB collection that contains the docume
 
 debugger: modal-auth ## starts a debugger running in our container but accessible via the terminal
 	modal shell app.py
+
+frontend-secrets: modal-auth
+	@$(if $(value DISCORD_AUTH),, \
+		$(error DISCORD_AUTH is not set. Please set it before running this target.))
+	@$(if $(value DISCORD_PUBLIC_KEY),, \
+		$(error DISCORD_PUBLIC_KEY is not set. Please set it before running this target.))
+	bash tasks/send_frontend_secrets_to_modal.sh
 
 secrets: modal-auth  ## pushes secrets from .env to Modal
 	@$(if $(value OPENAI_API_KEY),, \
@@ -83,28 +80,6 @@ modal-auth: environment ## confirms authentication with Modal, using secrets fro
 modal-token: environment ## creates token ID and secret for authentication with modal
 	modal token new
 	@tasks/pretty_log.sh "Copy the token info from the file mentioned above into .env"
-
-pulumi-config: export PULUMI_SKIP_UPDATE_CHECK=1
-pulumi-config:  ## adds secrets and config from env file to Pulumi
-ifndef HAS_PULUMI
-		$(error "pulumi not found. Please install pulumi before running this target.")
-endif
-	@tasks/pretty_log.sh "For more on setting up a bot account in Discord, see https://discordpy.readthedocs.io/en/stable/discord.html"
-	@pulumi -C bot/ login
-	tasks/pulumi_init.sh $(ENV)
-	pulumi -C bot/ stack select $(ENV)
-	@$(if $(value MODAL_USER_NAME),, \
-		$(error MODAL_USER_NAME is not set. Please set it before running this target.))
-	@$(if $(value DISCORD_AUTH),, \
-		$(error DISCORD_AUTH is not set. Please set it before running this target.))
-	@$(if $(value DISCORD_GUILD_ID),, \
-		$(error DISCORD_GUILD_ID is not set. Please set it before running this target.))
-	@pulumi -C bot/ config set MODAL_USER_NAME $(MODAL_USER_NAME)
-	@pulumi -C bot/ config set --secret DISCORD_AUTH $(DISCORD_AUTH)
-	@pulumi -C bot/ config set DISCORD_GUILD_ID $(DISCORD_GUILD_ID)
-	@$(if $(value DISCORD_MAINTAINER_ID),pulumi -C bot/ config set --secret DISCORD_MAINTAINER_ID $(DISCORD_MAINTAINER_ID),)
-	@pulumi -C bot/ config set aws:region us-west-2
-	pulumi -C bot/ config
 
 environment: ## installs required environment for deployment and corpus generation
 	@if [ -z "$(ENV_LOADED)" ]; then \
