@@ -190,6 +190,8 @@ def construct_response(raw_response: str, user_id: str, question: str) -> str:
 def construct_error_message(user_id: str) -> str:
     import os
 
+    from utils import pretty_log
+
     error_message = (
         f"*Sorry <@{user_id}>, an error occured while answering your question."
     )
