@@ -1,5 +1,5 @@
 """Functions to connect to a document store and fetch documents from it."""
-CONFIG = {"MONGO_DATABASE": "fsdl", "MONGO_COLLECTION": "ask-fsdl"}
+CONFIG = {"MONGO_DATABASE": "fsdl-dev", "MONGO_COLLECTION": "ask-fsdl"}
 
 
 def get_documents(collection=None, db=None, client=None, query=None):
