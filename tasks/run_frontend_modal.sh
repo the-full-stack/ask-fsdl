@@ -2,17 +2,16 @@
 # shellcheck source=tasks/pretty_log.sh
 set -euo pipefail
 
-env=${1:-"dev"}
+style=${1:-"serve"}
 
 # clear command-line parameters
 set --
 source tasks/pretty_log.sh
 
-pretty_log "Setting up frontend for $env"
-
-if [ "$env" = "dev" ]; then
-    modal serve bot
-else
-    pretty_log "Deploying app to $env"
+if [ "$style" = "deploy" ]; then
+    pretty_log "Deploying app"
     modal deploy bot
+else
+    pretty_log "Serving app -- changes to local files will trigger update"
+    modal serve bot
 fi

@@ -25,38 +25,45 @@ help: logo ## get a list of all the targets, and their short descriptions
 it-all: logo document-store vector-index backend frontend ## runs automated deployment steps
 
 frontend: slash-command ## deploy the Discord bot on Modal
-	@tasks/pretty_log.sh "Assumes you've set up your bot in Discord"
-	bash tasks/run_frontend_modal.sh $(ENV)
+	MODAL_ENVIRONMENT=$(ENV) bash tasks/run_frontend_modal.sh deploy
+
+serve-frontend: slash-command ## run the Discord bot as a hot-reloading "dev" server on Modal
+	MODAL_ENVIRONMENT=$(ENV) bash tasks/run_frontend_modal.sh serve
 
 slash-command: frontend-secrets ## register the bot's slash command with Discord
-	modal run bot::create_slash_command
+	@tasks/pretty_log.sh "Assumes you've set up your bot in Discord"
+	MODAL_ENVIRONMENT=$(ENV) modal run bot::create_slash_command
 	@tasks/pretty_log.sh "Slash command registered."
 
 backend: secrets ## deploy the Q&A backend on Modal
 	@tasks/pretty_log.sh "Assumes you've set up the vector index, see vector-index"
-	bash tasks/run_backend_modal.sh $(ENV)
+	MODAL_ENVIRONMENT=$(ENV) bash tasks/run_backend_modal.sh deploy
+
+serve-backend: secrets ## run the Q&A backend as a hot-reloading "dev" server on Modal
+	@tasks/pretty_log.sh "Assumes you've set up the vector index, see vector-index"
+	MODAL_ENVIRONMENT=$(ENV) bash tasks/run_backend_modal.sh serve
 
 cli-query: secrets ## run a query via a CLI interface
 	@tasks/pretty_log.sh "Assumes you've set up the vector index"
-	modal run app.py::stub.cli --query "${QUERY}"
+	MODAL_ENVIRONMENT=$(ENV) modal run app.py::stub.cli --query "${QUERY}"
 
-vector-index: secrets ## sets up a FAISS vector index to the application
+vector-index: secrets ## adds a FAISS vector index into the corpus to the application
 	@tasks/pretty_log.sh "Assumes you've set up the document storage, see document-store"
-	modal run app.py::stub.create_vector_index --db $(MONGODB_DATABASE) --collection $(MONGODB_COLLECTION)
+	MODAL_ENVIRONMENT=$(ENV) modal run app.py::stub.create_vector_index --db $(MONGODB_DATABASE) --collection $(MONGODB_COLLECTION)
 
 document-store: secrets ## creates a MongoDB collection that contains the document corpus
 	@tasks/pretty_log.sh "See docstore.py and the ETL notebook for details"
-	tasks/run_etl.sh --drop --db $(MONGODB_DATABASE) --collection $(MONGODB_COLLECTION)
+	MODAL_ENVIRONMENT=$(ENV) tasks/run_etl.sh --drop --db $(MONGODB_DATABASE) --collection $(MONGODB_COLLECTION)
 
-debugger: modal-auth ## starts a debugger running in our container but accessible via the terminal
-	modal shell app.py
+debugger: modal-auth ## starts a debugger running in a Modal container but accessible via the terminal
+	MODAL_ENVIRONMENT=$(ENV) modal shell app.py
 
 frontend-secrets: modal-auth
 	@$(if $(value DISCORD_AUTH),, \
 		$(error DISCORD_AUTH is not set. Please set it before running this target.))
 	@$(if $(value DISCORD_PUBLIC_KEY),, \
 		$(error DISCORD_PUBLIC_KEY is not set. Please set it before running this target.))
-	bash tasks/send_frontend_secrets_to_modal.sh
+	MODAL_ENVIRONMENT=$(ENV) bash tasks/send_frontend_secrets_to_modal.sh
 
 secrets: modal-auth  ## pushes secrets from .env to Modal
 	@$(if $(value OPENAI_API_KEY),, \
@@ -67,7 +74,7 @@ secrets: modal-auth  ## pushes secrets from .env to Modal
 		$(error MONGODB_USER is not set. Please set it before running this target.))
 	@$(if $(value MONGODB_PASSWORD),, \
 		$(error MONGODB_PASSWORD is not set. Please set it before running this target.))
-	bash tasks/send_secrets_to_modal.sh
+	MODAL_ENVIRONMENT=$(ENV) bash tasks/send_secrets_to_modal.sh
 
 modal-auth: environment ## confirms authentication with Modal, using secrets from `.env` file
 	@tasks/pretty_log.sh "If you haven't gotten a Modal token yet, run make modal-token"
@@ -76,6 +83,7 @@ modal-auth: environment ## confirms authentication with Modal, using secrets fro
 	@$(if $(value MODAL_TOKEN_SECRET),, \
 		$(error MODAL_TOKEN_SECRET is not set. Please set it before running this target. See make modal-token.))
 	@modal token set --token-id $(MODAL_TOKEN_ID) --token-secret $(MODAL_TOKEN_SECRET)
+	bash tasks/setup_environment_modal.sh $(ENV)
 
 modal-token: environment ## creates token ID and secret for authentication with modal
 	modal token new
