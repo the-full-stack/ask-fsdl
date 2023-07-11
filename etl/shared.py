@@ -11,7 +11,10 @@ stub = modal.Stub(
     secrets=[
         modal.Secret.from_name("mongodb-fsdl"),
     ],
-    mounts=[*modal.create_package_mounts(module_names=["docstore", "utils"])],
+    mounts=[
+        # we make our local modules available to the container
+        modal.Mount.from_local_python_packages("docstore", "utils")
+    ],
 )
 
 

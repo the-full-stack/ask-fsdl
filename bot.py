@@ -5,13 +5,14 @@ import os
 import aiohttp
 import json
 
-import modal
-from modal import Image, Secret, Stub, asgi_app
+from modal import Image, Mount, Secret, Stub, asgi_app
+
+from utils import pretty_log
 
 image = Image.debian_slim(python_version="3.10").pip_install("pynacl", "requests")
 discord_secrets = [Secret.from_name("discord-secret-fsdl")]
 
-stub = Stub("askfsdl-discord", image=image, secrets=discord_secrets)
+stub = Stub("askfsdl-discord", image=image, secrets=discord_secrets, mounts=[Mount.from_local_python_packages("utils")])
 
 
 class DiscordInteractionType(Enum):
@@ -32,12 +33,9 @@ class DiscordApplicationCommandOptionType(Enum):
     # keep one instance warm to reduce latency, consuming ~0.2 GB while idle
     # this costs ~$3/month at current prices, so well within $10/month free tier credit
     keep_warm=1,
-    mounts=modal.create_package_mounts(["utils"])
 )
 @asgi_app(label="askfsdl-discord-bot")
 def app() -> FastAPI:
-    from utils import pretty_log
-
     app = FastAPI()
 
     app.add_middleware(
@@ -87,9 +85,7 @@ def app() -> FastAPI:
     return app
 
 
-@stub.function(
-    mounts=modal.create_package_mounts(["utils"])
-)
+@stub.function()
 async def respond(
     question: str,
     application_id: str,
@@ -189,8 +185,6 @@ def construct_response(raw_response: str, user_id: str, question: str) -> str:
 
 def construct_error_message(user_id: str) -> str:
     import os
-
-    from utils import pretty_log
 
     error_message = (
         f"*Sorry <@{user_id}>, an error occured while answering your question."

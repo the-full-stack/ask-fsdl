@@ -16,7 +16,7 @@ stub = modal.Stub(
     ],
     mounts=[
         # we make our local modules available to the container
-        *modal.create_package_mounts(module_names=["docstore", "utils"])
+        modal.Mount.from_local_python_packages("docstore", "utils")
     ],
 )
 

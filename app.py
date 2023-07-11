@@ -43,19 +43,19 @@ stub = modal.Stub(
     ],
     mounts=[
         # we make our local modules available to the container
-        *modal.create_package_mounts(
-            module_names=["vecstore", "docstore", "utils", "prompts"]
+        modal.Mount.from_local_python_packages(
+            "vecstore", "docstore", "utils", "prompts"
         )
     ],
 )
 
 VECTOR_DIR = vecstore.VECTOR_DIR
-vector_storage = modal.SharedVolume().persist("vector-vol")
+vector_storage = modal.NetworkFileSystem.persisted("vector-vol")
 
 
 @stub.function(
     image=image,
-    shared_volumes={
+    network_file_systems={
         str(VECTOR_DIR): vector_storage,
     },
 )
@@ -78,7 +78,7 @@ def web(query: str, request_id=None):
 
 @stub.function(
     image=image,
-    shared_volumes={
+    network_file_systems={
         str(VECTOR_DIR): vector_storage,
     },
     keep_warm=1,
@@ -140,7 +140,7 @@ def qanda_langchain(query: str, request_id=None, with_logging: bool = False) -> 
 
 @stub.function(
     image=image,
-    shared_volumes={
+    network_file_systems={
         str(VECTOR_DIR): vector_storage,
     },
     cpu=8.0,  # use more cpu for vector storage creation
@@ -233,7 +233,7 @@ def prep_documents_for_vector_storage(documents):
 
 @stub.function(
     image=image,
-    shared_volumes={
+    network_file_systems={
         str(VECTOR_DIR): vector_storage,
     },
 )
@@ -259,7 +259,7 @@ async def redirect_docs():
 
 @stub.function(
     image=image,
-    shared_volumes={
+    network_file_systems={
         str(VECTOR_DIR): vector_storage,
     },
     keep_warm=1,
