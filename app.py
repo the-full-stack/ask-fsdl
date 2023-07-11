@@ -33,7 +33,7 @@ image = modal.Image.debian_slim(  # we start from a lightweight linux distro
 # we define a Stub to hold all the pieces of our app
 # most of the rest of this file just adds features onto this Stub
 stub = modal.Stub(
-    name="ask-fsdl",
+    name="askfsdl-backend",
     image=image,
     secrets=[
         # this is where we add API keys, passwords, and URLs, which are stored on Modal
@@ -59,7 +59,7 @@ vector_storage = modal.NetworkFileSystem.persisted("vector-vol")
         str(VECTOR_DIR): vector_storage,
     },
 )
-@modal.web_endpoint(method="GET", label="ask-fsdl-hook")
+@modal.web_endpoint(method="GET")
 def web(query: str, request_id=None):
     """Exposes our Q&A chain for queries via a web endpoint."""
     import os
@@ -264,7 +264,7 @@ async def redirect_docs():
     },
     keep_warm=1,
 )
-@modal.asgi_app(label="ask-fsdl")
+@modal.asgi_app(label="askfsdl-backend")
 def fastapi_app():
     """A simple Gradio interface for debugging."""
     import gradio as gr
