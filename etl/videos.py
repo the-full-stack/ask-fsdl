@@ -3,7 +3,7 @@ import modal
 import etl.shared
 
 # extend the shared image with YouTube-handling dependencies
-image = etl.shared.image.pip_install("youtube-transcript-api", "srt")
+image = etl.shared.image.pip_install("youtube-transcript-api==0.6.1", "srt==3.5.3")
 
 stub = modal.Stub(
     name="etl-videos",
