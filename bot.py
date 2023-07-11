@@ -12,7 +12,12 @@ from utils import pretty_log
 image = Image.debian_slim(python_version="3.10").pip_install("pynacl", "requests")
 discord_secrets = [Secret.from_name("discord-secret-fsdl")]
 
-stub = Stub("askfsdl-discord", image=image, secrets=discord_secrets, mounts=[Mount.from_local_python_packages("utils")])
+stub = Stub(
+    "askfsdl-discord",
+    image=image,
+    secrets=discord_secrets,
+    mounts=[Mount.from_local_python_packages("utils")],
+)
 
 
 class DiscordInteractionType(Enum):
