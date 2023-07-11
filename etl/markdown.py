@@ -4,7 +4,7 @@ import etl.shared
 
 # extend the shared image with markdown-handling dependencies
 image = etl.shared.image.pip_install(
-    "mistune<3.0",
+    "mistune==2.0.5",
     "python-slugify==8.0.1",
     "smart-open==6.3.0",
 )
