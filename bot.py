@@ -102,7 +102,7 @@ async def respond(
 
     try:
         raw_response = await modal.Function.lookup(
-            "askfsdl-backend", "qanda_langchain", environment_name=environment_name
+            "askfsdl-backend", "qanda", environment_name=environment_name
         ).call.aio(question, request_id=interaction_token, with_logging=True)
         pretty_log(raw_response)
 

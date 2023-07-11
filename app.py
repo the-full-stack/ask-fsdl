@@ -68,7 +68,7 @@ def web(query: str, request_id=None):
         f"handling request with client-provided id: {request_id}"
     ) if request_id else None
 
-    answer = qanda_langchain(
+    answer = qanda(
         query,
         request_id=request_id,
         with_logging=bool(os.environ.get("GANTRY_API_KEY")),
@@ -83,7 +83,7 @@ def web(query: str, request_id=None):
     },
     keep_warm=1,
 )
-def qanda_langchain(query: str, request_id=None, with_logging: bool = False) -> str:
+def qanda(query: str, request_id=None, with_logging: bool = False) -> str:
     """Runs sourced Q&A for a query using LangChain.
 
     Arguments:
@@ -238,7 +238,7 @@ def prep_documents_for_vector_storage(documents):
     },
 )
 def cli(query: str):
-    answer = qanda_langchain(query, with_logging=False)
+    answer = qanda(query, with_logging=False)
     pretty_log("🦜 ANSWER 🦜")
     print(answer)
 
@@ -271,7 +271,7 @@ def fastapi_app():
     from gradio.routes import App
 
     def chain_with_logging(*args, **kwargs):
-        return qanda_langchain(*args, with_logging=True, **kwargs)
+        return qanda(*args, with_logging=True, **kwargs)
 
     inputs = gr.TextArea(
         label="Question",
