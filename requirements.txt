@@ -1,3 +1,4 @@
 python-dotenv==1.0.0
 modal-client~=0.50
+bson==0.5.10
 jupyter
