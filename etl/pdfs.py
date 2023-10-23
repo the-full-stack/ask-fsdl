@@ -16,7 +16,7 @@ stub = modal.Stub(
     ],
     mounts=[
         # we make our local modules available to the container
-        modal.Mount.from_local_python_packages("docstore", "utils")
+        modal.Mount.from_local_python_packages("app.docstore", "app.utils")
     ],
 )
 
@@ -42,7 +42,7 @@ def main(json_path="data/llm-papers.json", collection=None, db=None):
     with open(json_path) as f:
         paper_data = json.load(f)
 
-    paper_data = get_pdf_url.map(paper_data, return_exceptions=True)
+    paper_data = get_pdf_url.map(paper_data)
 
     documents = etl.shared.unchunk(extract_pdf.map(paper_data, return_exceptions=True))
 
@@ -79,7 +79,10 @@ def extract_pdf(paper_data):
     logger = logging.getLogger("pypdf")
     logger.setLevel(logging.ERROR)
 
-    loader = PyPDFLoader(pdf_url)
+    try:
+        loader = PyPDFLoader(pdf_url)
+    except Exception:
+        return []
 
     try:
         documents = loader.load_and_split()
@@ -132,7 +135,7 @@ def extract_pdf(paper_data):
 @stub.function()
 def fetch_papers(collection_name="all-content"):
     """Fetches papers from the LLM Lit Review, https://tfs.ai/llm-lit-review."""
-    import docstore
+    from app import docstore
 
     client = docstore.connect()
 

@@ -47,7 +47,7 @@ source tasks/pretty_log.sh
 
 if [ $drop ]; then
   pretty_log "Dropping collection $collection in $db"
-  modal run app.py::drop_docs --db "$db" --collection "$collection"
+  modal run app.main::drop_docs --db "$db" --collection "$collection"
 fi
 
 pretty_log "Extracting video transcripts"

@@ -17,7 +17,7 @@ stub = modal.Stub(
     ],
     mounts=[
         # we make our local modules available to the container
-        modal.Mount.from_local_python_packages("docstore", "utils")
+        modal.Mount.from_local_python_packages("app.docstore", "app.utils")
     ],
 )
 
@@ -93,7 +93,6 @@ def to_documents(lecture, website_url, md_url):
     return documents
 
 
-@stub.function(image=image)
 def get_text_from(url):
     from smart_open import open
 
@@ -103,7 +102,6 @@ def get_text_from(url):
     return contents
 
 
-@stub.function(image=image)
 def get_target_headings_and_slugs(text):
     """Pull out headings from a markdown document and slugify them."""
     import mistune

@@ -13,7 +13,7 @@ stub = modal.Stub(
     ],
     mounts=[
         # we make our local modules available to the container
-        modal.Mount.from_local_python_packages("docstore", "utils")
+        modal.Mount.from_local_python_packages("app.docstore", "app.utils")
     ],
 )
 

@@ -13,7 +13,7 @@ stub = modal.Stub(
     ],
     mounts=[
         # we make our local modules available to the container
-        modal.Mount.from_local_python_packages("docstore", "utils")
+        modal.Mount.from_local_python_packages("app.docstore", "app.utils")
     ],
 )
 
@@ -23,7 +23,7 @@ def add_to_document_db(documents_json, collection=None, db=None):
     """Adds a collection of json documents to a database."""
     from pymongo import InsertOne
 
-    import docstore
+    from app import docstore
 
     collection = docstore.get_collection(collection, db)
 

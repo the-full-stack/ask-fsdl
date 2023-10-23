@@ -1,7 +1,7 @@
 """Utilities for creating and using vector indexes."""
 from pathlib import Path
 
-from utils import pretty_log
+from .utils import pretty_log
 
 INDEX_NAME = "openai-ada-fsdl"
 VECTOR_DIR = Path("/vectors")

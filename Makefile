@@ -32,7 +32,7 @@ serve-frontend: slash-command ## run the Discord bot as a hot-reloading "dev" se
 
 slash-command: frontend-secrets ## register the bot's slash command with Discord
 	@tasks/pretty_log.sh "Assumes you've set up your bot in Discord"
-	MODAL_ENVIRONMENT=$(ENV) modal run bot::create_slash_command
+	MODAL_ENVIRONMENT=$(ENV) modal run app.bot::create_slash_command
 	@tasks/pretty_log.sh "Slash command registered."
 
 backend: secrets ## deploy the Q&A backend on Modal
@@ -45,18 +45,18 @@ serve-backend: secrets ## run the Q&A backend as a hot-reloading "dev" server on
 
 cli-query: secrets ## run a query via a CLI interface
 	@tasks/pretty_log.sh "Assumes you've set up the vector index"
-	MODAL_ENVIRONMENT=$(ENV) modal run app.py::stub.cli --query "${QUERY}"
+	MODAL_ENVIRONMENT=$(ENV) modal run app.main::stub.cli --query "${QUERY}"
 
 vector-index: secrets ## adds a FAISS vector index into the corpus to the application
 	@tasks/pretty_log.sh "Assumes you've set up the document storage, see document-store"
-	MODAL_ENVIRONMENT=$(ENV) modal run app.py::stub.create_vector_index --db $(MONGODB_DATABASE) --collection $(MONGODB_COLLECTION)
+	MODAL_ENVIRONMENT=$(ENV) modal run app.main::stub.create_vector_index --db $(MONGODB_DATABASE) --collection $(MONGODB_COLLECTION)
 
 document-store: secrets ## creates a MongoDB collection that contains the document corpus
 	@tasks/pretty_log.sh "See docstore.py and the ETL notebook for details"
 	MODAL_ENVIRONMENT=$(ENV) tasks/run_etl.sh --drop --db $(MONGODB_DATABASE) --collection $(MONGODB_COLLECTION)
 
 debugger: modal-auth ## starts a debugger running in a Modal container but accessible via the terminal
-	MODAL_ENVIRONMENT=$(ENV) modal shell app.py
+	MODAL_ENVIRONMENT=$(ENV) modal shell app.main::cli
 
 frontend-secrets: modal-auth
 	@$(if $(value DISCORD_AUTH),, \

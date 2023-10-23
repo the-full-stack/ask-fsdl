@@ -5,8 +5,8 @@ import modal
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
-import vecstore
-from utils import pretty_log
+from . import vecstore
+from .utils import pretty_log
 
 
 # definition of our container image for jobs on Modal
@@ -44,7 +44,7 @@ stub = modal.Stub(
     mounts=[
         # we make our local modules available to the container
         modal.Mount.from_local_python_packages(
-            "vecstore", "docstore", "utils", "prompts"
+            "app.vecstore", "app.docstore", "app.utils", "app.prompts"
         )
     ],
 )
@@ -94,8 +94,8 @@ def qanda(query: str, request_id=None, with_logging: bool = False) -> str:
     from langchain.chains.qa_with_sources import load_qa_with_sources_chain
     from langchain.chat_models import ChatOpenAI
 
-    import prompts
-    import vecstore
+    from . import prompts
+    from . import vecstore
 
     embedding_engine = vecstore.get_embedding_engine(allowed_special="all")
 
@@ -172,7 +172,7 @@ def create_vector_index(collection: str = None, db: str = None):
 @stub.function(image=image)
 def drop_docs(collection: str = None, db: str = None):
     """Drops a collection from the document storage."""
-    import docstore
+    from . import docstore
 
     docstore.drop(collection, db)
 
