@@ -40,6 +40,26 @@ def add_to_document_db(documents_json, collection=None, db=None):
         collection.bulk_write(requesting)
 
 
+@stub.function(image=image)
+def query(query, projection=None, collection=None, db=None, client=None):
+    """Runs a query against the document db and returns a list of results."""
+    from app import docstore
+
+    collection = docstore.get_collection(collection, db, client)
+
+    return list(collection.find(query, projection))
+
+
+@stub.function(image=image)
+def query_one(query, projection=None, collection=None, db=None, client=None):
+    """Runs a query against the document db and returns the first result."""
+    from app import docstore
+
+    collection = docstore.get_collection(collection, db, client)
+
+    return collection.find_one(query, projection)
+
+
 def enrich_metadata(pages):
     """Add our metadata: sha256 hash and ignore flag."""
     import hashlib
