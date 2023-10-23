@@ -7,7 +7,6 @@ repos:
       - id: trailing-whitespace # removes any whitespace at the ends of lines
       - id: check-toml # check toml syntax by loading all toml files
       - id: check-yaml # check yaml syntax by loading all yaml files
-      - id: check-json # check-json syntax by loading all json files
       - id: check-merge-conflict # check for files with merge conflict strings
         args: ["--assume-in-merge"] #  and run this check even when not explicitly in a merge
       - id: check-added-large-files # check that no "large" files have been added
@@ -16,7 +15,14 @@ repos:
       - id: detect-private-key # checks for private keys (BEGIN X PRIVATE KEY, etc.)
       - id: pretty-format-json # cleaner json files
         args: ["--autofix"] # automatically
-        files: \.json
+        files: \.json # skip triggering on eg .ipynbs
+        exclude: .devcontainer # exclude .devcontainer folder which has commented json
+
+  - repo: https://gitlab.com/bmares/check-json5
+    rev: v1.0.0
+    hooks:
+    - id: check-json5 # check json syntax by loading all json files, allowing for comments
+
 
   # black for python autoformatting
   - repo: https://github.com/psf/black
