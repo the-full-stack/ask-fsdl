@@ -98,17 +98,12 @@ async def respond(
     user_id: str,
 ):
     """Respond to a user's question by passing it to the language model."""
-    import os
-
     import modal
-
-    # TODO: remove this once environment discovery is working
-    environment_name = os.getenv("DISCORD_ENVIRONMENT")
 
     try:
         raw_response = await modal.Function.lookup(
-            "askfsdl-backend", "qanda", environment_name=environment_name
-        ).call.aio(question, request_id=interaction_token, with_logging=True)
+            "askfsdl-backend", "qanda"
+        ).remote.aio(question, request_id=interaction_token, with_logging=True)
         pretty_log(raw_response)
 
         response = construct_response(raw_response, user_id, question)
