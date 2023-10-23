@@ -1,31 +1,22 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
-	"name": "Python 3",
+	"name": "askFSDL-dev",
 	"image": "mcr.microsoft.com/devcontainers/python:1-3.10-buster",
-
-	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "pip3 install --user -r requirements-dev.txt && pre-commit",
-
-	// Configure tool-specific properties.
 	"customizations": {
-
-    "vscode": {
-		"extensions": [
-			"ms-toolsai.jupyter",
-			"ms-python.black-formatter",
-			"tamasfe.even-better-toml",
-			"ms-toolsai.vscode-jupyter-cell-tags",
-			"ms-toolsai.jupyter-renderers",
-			"ms-python.vscode-pylance",
-			"ms-python.python",
-			"charliermarsh.ruff",
-			"timonwong.shellcheck",
-			"redhat.vscode-yaml"
-		]
-	  }
+		"vscode": {
+			"extensions": [
+				"ms-toolsai.jupyter",
+				"ms-python.black-formatter",
+				"tamasfe.even-better-toml",
+				"ms-toolsai.vscode-jupyter-cell-tags",
+				"ms-toolsai.jupyter-renderers",
+				"ms-python.vscode-pylance",
+				"ms-python.python",
+				"charliermarsh.ruff",
+				"timonwong.shellcheck",
+				"redhat.vscode-yaml"
+			]
+		}
 	},
-
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	"remoteUser": "root"
 }
