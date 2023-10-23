@@ -1,7 +1,8 @@
 {
 	"name": "askFSDL-dev",
 	"image": "mcr.microsoft.com/devcontainers/python:1-3.10-buster",
-	"postCreateCommand": "pip3 install --user -r requirements-dev.txt && pre-commit install",
+	"onCreateCommand": "pip3 install --user -r requirements-dev.txt && pre-commit install",
+	"updateContentCommand": "pip3 install --user -r requirements-dev.txt && pre-commit install",
 	"customizations": {
 		"vscode": {
 			"extensions": [
