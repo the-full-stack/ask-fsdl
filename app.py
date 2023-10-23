@@ -68,7 +68,7 @@ def web(query: str, request_id=None):
         f"handling request with client-provided id: {request_id}"
     ) if request_id else None
 
-    answer = qanda(
+    answer = qanda.remote(
         query,
         request_id=request_id,
         with_logging=bool(os.environ.get("GANTRY_API_KEY")),
@@ -238,7 +238,7 @@ def prep_documents_for_vector_storage(documents):
     },
 )
 def cli(query: str):
-    answer = qanda(query, with_logging=False)
+    answer = qanda.remote(query, with_logging=False)
     pretty_log("🦜 ANSWER 🦜")
     print(answer)
 
