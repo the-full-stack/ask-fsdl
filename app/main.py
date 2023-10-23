@@ -271,7 +271,7 @@ def fastapi_app():
     from gradio.routes import App
 
     def chain_with_logging(*args, **kwargs):
-        return qanda(*args, with_logging=True, **kwargs)
+        return qanda.remote(*args, with_logging=True, **kwargs)
 
     inputs = gr.TextArea(
         label="Question",
