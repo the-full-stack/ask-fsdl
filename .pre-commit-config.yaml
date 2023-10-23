@@ -16,7 +16,7 @@ repos:
       - id: pretty-format-json # cleaner json files
         args: ["--autofix"] # automatically
         files: \.json # skip triggering on eg .ipynbs
-        exclude: .devcontainer # exclude .devcontainer folder which has commented json
+        exclude: (\.devcontainer|.vscode) # exclude .devcontainer folder which has commented json
 
   - repo: https://gitlab.com/bmares/check-json5
     rev: v1.0.0

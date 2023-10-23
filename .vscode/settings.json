@@ -1,0 +1,6 @@
+{
+  "shellcheck.useWorkspaceRootAsCwd": false,
+  "shellcheck.ignorePatterns": {
+    "**/.env.*": true
+  }
+}
