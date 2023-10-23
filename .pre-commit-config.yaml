@@ -16,6 +16,7 @@ repos:
       - id: detect-private-key # checks for private keys (BEGIN X PRIVATE KEY, etc.)
       - id: pretty-format-json # cleaner json files
         args: ["--autofix"] # automatically
+        files: \.json
 
   # black for python autoformatting
   - repo: https://github.com/psf/black
