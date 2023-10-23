@@ -286,7 +286,7 @@ def fastapi_app():
         fn=chain_with_logging,
         inputs=inputs,
         outputs=outputs,
-        title="Ask Questions About The Full Stack.",
+        title="Ask Questions About Building AI Systems.",
         description="Get answers with sources from an LLM.",
         examples=[
             "What is zero-shot chain-of-thought prompting?",
