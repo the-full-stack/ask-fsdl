@@ -1,10 +1,21 @@
+from typing import Optional
+
 import modal
 
 import etl.shared
 
+# type aliases, for documentation only
+PlaylistId = str
+VideoInfo = dict
+VideoId = str
+Chapter = dict
+Document = dict  # really, a LangChain.Document
+Subtitles = dict
+
 # extend the shared image with YouTube-handling dependencies
 image = etl.shared.image.pip_install("youtube-transcript-api==0.6.1", "srt==3.5.3")
 
+# construct our app stub by adding secrets and mounts
 stub = modal.Stub(
     name="etl-videos",
     image=image,
@@ -47,7 +58,7 @@ def main(json_path="data/videos.json", collection=None, db=None):
 @stub.function(
     retries=modal.Retries(max_retries=3, backoff_coefficient=2.0, initial_delay=5.0)
 )
-def extract_subtitles(video_info):
+def extract_subtitles(video_info: VideoInfo) -> list[Document]:
     video_id, video_title = video_info["id"], video_info["title"]
     subtitles = get_transcript(video_id)
     chapters = get_chapters(video_id)
@@ -58,13 +69,20 @@ def extract_subtitles(video_info):
     return documents
 
 
-def get_transcript(video_id):
+@stub.function(concurrency_limit=10)
+def get_transcript(video_id: VideoId) -> Optional[dict]:
     from youtube_transcript_api import YouTubeTranscriptApi
 
-    return YouTubeTranscriptApi.get_transcript(video_id)
+    try:
+        return YouTubeTranscriptApi.get_transcript(video_id)
+    except Exception:
+        return None
 
 
-def get_chapters(video_id):
+@stub.function(
+    retries=modal.Retries(max_retries=3, backoff_coefficient=2.0, initial_delay=5.0)
+)
+def get_chapters(video_id: VideoId) -> list[Chapter]:
     import requests
 
     base_url = "https://yt.lemnoslife.com"
@@ -76,15 +94,51 @@ def get_chapters(video_id):
     response.raise_for_status()
 
     chapters = response.json()["items"][0]["chapters"]["chapters"]
-    assert len(chapters) >= 0, "Video has no chapters"
+    assert len(chapters) >= 0, "Response has no chapters"
 
     for chapter in chapters:
         del chapter["thumbnails"]
 
+    if len(chapters) == 0:  # if there's no chapters, call it one big chapter
+        chapters = [{"time": 0, "title": "Full Video"}]
+
     return chapters
 
 
-def add_transcript(chapters, subtitles):
+@stub.function(
+    retries=modal.Retries(max_retries=3, backoff_coefficient=2.0, initial_delay=5.0)
+)
+def get_playlist_videos(playlist_id: PlaylistId) -> list[VideoId]:
+    """Get ids for all of the videos in a playlist"""
+    import requests
+
+    base_url = "https://yt.lemnoslife.com"
+    request_path = "/playlistItems"
+
+    params = {"playlistId": playlist_id, "part": "snippet"}
+
+    response = requests.get(base_url + request_path, params=params)
+    response.raise_for_status()
+
+    raw_items = response.json()["items"]
+    videos = [get_video_metadata(item["snippet"]) for item in raw_items]
+    videos = [video for video in videos if video is not None]
+
+    return videos
+
+
+def get_video_metadata(snippet: dict) -> Optional[VideoInfo]:
+    """Extract just the metadata we need from the YouTube API response."""
+    try:
+        assert snippet["resourceId"]["kind"] == "youtube#video"
+        data = {"id": snippet["resourceId"]["videoId"], "title": snippet["title"]}
+    except Exception:
+        return None
+    return data
+
+
+@stub.function()
+def add_transcript(chapters: list[Chapter], subtitles: Subtitles):
     for ii, chapter in enumerate(chapters):
         next_chapter = chapters[ii + 1] if ii < len(chapters) - 1 else {"time": 1e10}
 
@@ -102,7 +156,11 @@ def add_transcript(chapters, subtitles):
     return chapters
 
 
-def create_documents(chapters, id, video_title):
+@stub.function(concurrency_limit=100)
+def create_documents(
+    chapters: list[Chapter], id: str, video_title: str
+) -> list[Document]:
+    """Convert the chapter subtitles of a video into a document collection."""
     base_url = f"https://www.youtube.com/watch?v={id}"
     query_params_format = "&t={start}s"
     documents = []
