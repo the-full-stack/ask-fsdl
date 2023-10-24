@@ -67,12 +67,12 @@ def web(query: str, request_id=None):
         f"handling request with client-provided id: {request_id}"
     ) if request_id else None
 
-    answer = qanda.remote(
+    answer, run_id = qanda.remote(
         query,
         request_id=request_id,
         with_logging=True,
     )
-    return {"answer": answer}
+    return {"answer": answer, "run_id": run_id}
 
 
 @stub.function(
@@ -82,7 +82,7 @@ def web(query: str, request_id=None):
     },
     keep_warm=1,
 )
-def qanda(query: str, request_id=None, with_logging: bool = False) -> str:
+def qanda(query: str, request_id=None, with_logging: bool = False) -> (str, str):
     """Runs sourced Q&A for a query using LangChain.
 
     Arguments:
@@ -90,6 +90,7 @@ def qanda(query: str, request_id=None, with_logging: bool = False) -> str:
         request_id: A unique identifier for the request.
         with_logging: If True, prints the interaction to the logs.
     """
+    import langchain
     from langchain.chains.qa_with_sources import load_qa_with_sources_chain
     from langchain.chat_models import ChatOpenAI
 
@@ -122,17 +123,18 @@ def qanda(query: str, request_id=None, with_logging: bool = False) -> str:
         document_variable_name="sources",
     )
 
-    result = chain(
-        {"input_documents": sources, "question": query},
-        return_only_outputs=True,
-    )
+    with langchain.callbacks.collect_runs() as cb:
+        result = chain.invoke(
+            {"input_documents": sources, "question": query},
+        )
+        run_id = cb.traced_runs[0].id
 
     answer = result["output_text"]
 
     if with_logging:
         print(answer)
 
-    return answer
+    return answer, run_id
 
 
 @stub.function(
@@ -206,7 +208,7 @@ def prep_documents_for_vector_storage(documents):
     },
 )
 def cli(query: str):
-    answer = qanda.remote(query, with_logging=False)
+    answer, _ = qanda.remote(query, with_logging=False)
     pretty_log("🦜 ANSWER 🦜")
     print(answer)
 
@@ -231,45 +233,45 @@ async def redirect_docs():
         str(VECTOR_DIR): vector_storage,
     },
     keep_warm=1,
+    concurrency_limit=1,  # turn off concurrency until state bug resolved
 )
 @modal.asgi_app(label="askfsdl-backend")
 def fastapi_app():
     """A simple Gradio interface for debugging."""
     import gradio as gr
     from gradio.routes import mount_gradio_app
+    import langsmith
 
     def chain_with_logging(*args, **kwargs):
-        answer = qanda.remote(*args, with_logging=True, **kwargs)
-        return answer
+        answer, run_id = qanda.remote(*args, with_logging=True, **kwargs)
+        return answer, run_id
 
-    inputs = gr.TextArea(
-        label="Question",
-        value="What is zero-shot chain-of-thought prompting?",
-        show_label=True,
-    )
-    outputs = gr.TextArea(
-        label="Answer", value="The answer will appear here.", show_label=True
-    )
+    interface = gr.Blocks()
 
-    interface = gr.Interface(
-        fn=chain_with_logging,
-        inputs=inputs,
-        outputs=outputs,
-        title="Ask Questions About Building AI Systems.",
-        description="Get answers with sources from an LLM.",
-        examples=[
-            "What is zero-shot chain-of-thought prompting?",
-            "Would you rather fight 100 LLaMA-sized GPT-4s or 1 GPT-4-sized LLaMA?",
-            "What are the differences in capabilities between GPT-3 davinci and GPT-3.5 code-davinci-002?",  # noqa: E501
-            "What is PyTorch? How can I decide whether to choose it over TensorFlow?",
-            "Is it cheaper to run experiments on cheap GPUs or expensive GPUs?",
-            "How do I recruit an ML team?",
-            "What is the best way to learn about ML?",
-        ],
-        allow_flagging="never",
-        theme=gr.themes.Default(radius_size="none", text_size="lg"),
-        article="# GitHub Repo: https://github.com/the-full-stack/ask-fsdl",
-    )
+    with interface:
+        client = langsmith.Client()
+        run_id = gr.State(value=None)
+        inputs = gr.TextArea(
+            label="Question",
+            value="What are the most important principles of MLOps?",
+            show_label=True,
+        )
+        outputs = gr.TextArea(
+            label="Answer", value="The answer will appear here.", show_label=True
+        )
+
+        submit = gr.Button("Submit")
+        submit.click(chain_with_logging, [inputs], [outputs, run_id])
+
+        def on_flag(run_id):
+            pretty_log("flagged")
+            pretty_log(run_id)
+            if run_id is not None:
+                pretty_log("logging feedback to LangSmith")
+                client.create_feedback(run_id, "flagged", score=True)
+
+        flag = gr.Button("Flag")
+        flag.click(on_flag, [run_id])
 
     return mount_gradio_app(
         app=web_app,
