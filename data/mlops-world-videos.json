@@ -1,0 +1,414 @@
+[
+  {
+    "id": "vf5YmuBmX08",
+    "title": "Transformative Power of ML in the Real World"
+  },
+  {
+    "id": "hDTP98-RL0U",
+    "title": "Don't Fear Compliance Requirements & Audits  Implementing SecMLOps at Every Stage of the Pipeline"
+  },
+  {
+    "id": "0qJmRTpmVnE",
+    "title": "One Cluster to Rule Them All   ML on the Cloud Using Ray on Kubernetes and AWS"
+  },
+  {
+    "id": "eZoTGlTdfDY",
+    "title": "How MLOps Tools Will Need to Adapt to Responsible and Ethical AI  Stay Ahead of the Curve"
+  },
+  {
+    "id": "PXRGErd1orU",
+    "title": "Low latency Neural Network Inference for ML Ranking Applications  Yelp Case Study"
+  },
+  {
+    "id": "KxSS2fFmdBo",
+    "title": "Eliminating AI Risk, One Model Failure at a Time"
+  },
+  {
+    "id": "naUQUfEab_4",
+    "title": "Top 5 Lessons Learned in Helping Organizations Adopt MLOps Practices"
+  },
+  {
+    "id": "ByERMx4jQYA",
+    "title": "Scotiabank's Path Towards Accelerated Analytics Through GCP"
+  },
+  {
+    "id": "14wLQGXKWGc",
+    "title": "Robustness and Security for AI and the Dangerous Dismissal of Edge Cases"
+  },
+  {
+    "id": "giNPl2Uo0xc",
+    "title": "A Framework for a Successful Continuous Training Strategy"
+  },
+  {
+    "id": "z-wW2uwDDnA",
+    "title": "How to Conquer Data Drift & Prevent Stale Models in Production using DVC"
+  },
+  {
+    "id": "yF_vKfDo6o0",
+    "title": "Managing Human in the Loop Systems Without Burning Out Your Engineers"
+  },
+  {
+    "id": "53JRS0oMuOM",
+    "title": "SLA Aware Machine Learning Inference Serving on Serverless Computing Platforms"
+  },
+  {
+    "id": "dwlT5QotGAs",
+    "title": "Wild Wild Tests: Testing Recommender Systems in the Wild"
+  },
+  {
+    "id": "QXSIO9IpcEw",
+    "title": "Feature Engineering Made Simple"
+  },
+  {
+    "id": "YSxOESfYAk8",
+    "title": "Machine Learning Infrastructure at Meta Scale"
+  },
+  {
+    "id": "_KPZ1Er_IE0",
+    "title": "The Future of Feature Stores"
+  },
+  {
+    "id": "l9F_pLbdUvY",
+    "title": "MLOps for Deep Learning"
+  },
+  {
+    "id": "FVZn48Zb_rM",
+    "title": "Shopify's ML Platform Journey Using Open Source Tools  Case study building Merlin & AMA"
+  },
+  {
+    "id": "xAN1HxU5XeU",
+    "title": "MLOps for Fairness: Creating Comprehensive Fairness workflows"
+  },
+  {
+    "id": "VC4aRg4PG90",
+    "title": "Managing a Data Science Team During the Great Resignation"
+  },
+  {
+    "id": "X67o6upS3i8",
+    "title": "Cutting-edge NLP, Large Language Models, and Their Implications For Products and Research"
+  },
+  {
+    "id": "kNVItLhfJcw",
+    "title": "The Critical Things You Have to Build to Transform Your Company to be ML Driven"
+  },
+  {
+    "id": "a8HUjhArHzA",
+    "title": "Supporting Sales Forecasting at Scale for Canada's Largest Grocery Store"
+  },
+  {
+    "id": "4J_lx8nQoNE",
+    "title": "Panel: What Every Product Manager Delivering AI Solutions Should Know"
+  },
+  {
+    "id": "kT-8RoPQi9w",
+    "title": "What Do Engineers Not Get About Working with Data Scientists"
+  },
+  {
+    "id": "_Rqo6nooKKE",
+    "title": "MLOps at Rovio for Personalization Self Service Reinforcement Learning in Production"
+  },
+  {
+    "id": "QJC6m-mfuxo",
+    "title": "A Guide for Start ups; How to Scale a PoC to Production System and Not Go Up in Smoke"
+  },
+  {
+    "id": "t5MSNf8600U",
+    "title": "CyclOps - A framework for Data Extraction, Model Evaluation and Drift Detection for Clinical Use"
+  },
+  {
+    "id": "8xYJfB8v-es",
+    "title": "A Guide to Building a Continuous MLOps Stack"
+  },
+  {
+    "id": "Qd8MsnBl3Mo",
+    "title": "Shopify's ML Platform Journey Using Open Source Tools  Case study building Merlin & AMA"
+  },
+  {
+    "id": "I3J3iNQUgF8",
+    "title": "AI in Robotics, Manufacturing, and Media  How Good Practices Can Shape the Future"
+  },
+  {
+    "id": "w1VpCzHSFpA",
+    "title": "It\u2019s All About The Data  Continuously Improve ML Models, The Data-Centric Way"
+  },
+  {
+    "id": "B-PBdxThngE",
+    "title": "Understanding Foundation Models  a New Paradigm for Building and Productizing AI systems"
+  },
+  {
+    "id": "8GB0qmnaBUA",
+    "title": "Hands on: A Beginner Friendly Crash Course to Kubernetes"
+  },
+  {
+    "id": "-RR4YiW_qng",
+    "title": "Solving MLOps From First Principles  A Framework to Reduce Complexity"
+  },
+  {
+    "id": "OdWsS0l-9ks",
+    "title": "Panel: Embedding Diversity and Fairness Into Your Model Governance"
+  },
+  {
+    "id": "l3qw_qHdjTQ",
+    "title": "Building Production ML Monitoring from Scratch  Live Coding Session"
+  },
+  {
+    "id": "0D15X_vIPO8",
+    "title": "How We Reduced 83% of ML Computing Cost on 100+ ML Projects"
+  },
+  {
+    "id": "hQROasQ_WHM",
+    "title": "Becoming An ML Platform Power Builder Powered by ML Observability"
+  },
+  {
+    "id": "TdjJpAHLuxQ",
+    "title": "Introduction to Model Deployment with Ray Serve"
+  },
+  {
+    "id": "RGrwb-W5FDk",
+    "title": "UnionML:  A Microframework for Building Machine Learning Applications"
+  },
+  {
+    "id": "VnWfNM_bhek",
+    "title": "Concretes Guidelines to Improve ML Model Quality, Based on Future ISO Certifications"
+  },
+  {
+    "id": "NXvcIU2tfFU",
+    "title": "A GitOps Approach to Machine Learning"
+  },
+  {
+    "id": "l-5Tw73eT00",
+    "title": "Supercharging MLOps with the Petuum Platform"
+  },
+  {
+    "id": "lbyGbakug3U",
+    "title": "Scaling ML Embedding Models to Serve a Billion Queries"
+  },
+  {
+    "id": "3msgcAxo9YA",
+    "title": "MLOps is Just HPC in Disguise   A Real World, No Nonsense Guide to Upgrading Your Workflow"
+  },
+  {
+    "id": "QzhtXRkr22w",
+    "title": "Critical Use of MLOps in Finance Using Cloud-Managed ML Services That Scale"
+  },
+  {
+    "id": "WvdLydIAD44",
+    "title": "Building Real-Time ML Features with Feast, Spark, Redis, and Kafka"
+  },
+  {
+    "id": "yaagEv1K22s",
+    "title": "Trustworthy AI for MLOps"
+  },
+  {
+    "id": "VfMZGoYIims",
+    "title": "What's in the Box: Automatic ML Model Containerization"
+  },
+  {
+    "id": "5_TZ5X6YYx0",
+    "title": "WarpDrive: Orders of Magnitude Faster Multi-Agent Deep RL on a GPU"
+  },
+  {
+    "id": "0ZSqobk9GSA",
+    "title": "Taking MLOps 0-60: How to Version Control, Unify Data and Manage Code Lifecycles"
+  },
+  {
+    "id": "-TZubYtroZ4",
+    "title": "Scale and Accelerate the Distributed Model Training in Kubernetes Cluster"
+  },
+  {
+    "id": "QTHzvcDt6y8",
+    "title": "Production ML for Mission Critical Applications"
+  },
+  {
+    "id": "TiYIPmzb0z8",
+    "title": "Personalized Recommendations and Search with Retrieval and Ranking at scale on Hopsworks"
+  },
+  {
+    "id": "ojoqi9rGdWY",
+    "title": "MLOps Beyond Training: Simplifying and Automating the Operational Pipeline"
+  },
+  {
+    "id": "mxsr18_7n6U",
+    "title": "Machine Learning Monitoring in Production: Lessons learned from 30+ Use Cases"
+  },
+  {
+    "id": "hC7WncPqd0M",
+    "title": "Lessons Learned from DAG based Workflow Orchestration"
+  },
+  {
+    "id": "QVu-JnfXlRc",
+    "title": "Leaner, Greener and Faster Pytorch Inference with Quantization"
+  },
+  {
+    "id": "ByMaDk2LtyY",
+    "title": "How to Treat Your Data Platform Like a Product 5 Key Best Practices"
+  },
+  {
+    "id": "YNfttfgjoC0",
+    "title": "How to MLEM Your Models to Production"
+  },
+  {
+    "id": "H697AaQVVUo",
+    "title": "Generalizing Diversity   Machine Learning Operationalization for Pharma Research"
+  },
+  {
+    "id": "Y9XSAgihrBg",
+    "title": "Deploying and Managing Machine Learning Models at Scale: A Hands-On Workshop with Seldon"
+  },
+  {
+    "id": "Px9hkOiN4_c",
+    "title": "Defending Against Decision Degradation with Full Spectrum Model Monitoring   Case Study and AMA"
+  },
+  {
+    "id": "hrFd9Qek6H8",
+    "title": "Automated Machine Learning Tuning with FLAML"
+  },
+  {
+    "id": "VhpP_kYStoI",
+    "title": "Accelerating Transformers with Hugging Face Optimum and Infinity"
+  },
+  {
+    "id": "LHm8VGvzEV4",
+    "title": "A Zero Downtime Set up for Models: How and Why"
+  },
+  {
+    "id": "8MbI5-70Jl4",
+    "title": "Intro"
+  },
+  {
+    "id": "Rh9cGBEsDO8",
+    "title": "A Gentle Introduction to Sparsity with a Concrete Example"
+  },
+  {
+    "id": "ghQ-tHO4iCI",
+    "title": "Accelerating Deployment of AI with MLOps Orchestration"
+  },
+  {
+    "id": "I97SVWFKZDw",
+    "title": "Automated Monitoring in Production for Continuous Model Improvements"
+  },
+  {
+    "id": "VwBvOwWY3xc",
+    "title": "Build High Performance MLOps With ML Monitoring and AI Explainability"
+  },
+  {
+    "id": "MIqJ_KcgVds",
+    "title": "Data Prep Ops: The Last Frontier of MLOps"
+  },
+  {
+    "id": "uCVbE4Ub1-w",
+    "title": "End-to-End MLOps for Computer Vision"
+  },
+  {
+    "id": "1FJyEzPuRYo",
+    "title": "Hands on Workshop: Create Machine Learning Retraining Pipelines"
+  },
+  {
+    "id": "hUA64UgkLxw",
+    "title": "How to Iterate and Productionize Machine Learning Models with Speed"
+  },
+  {
+    "id": "verCaNXBroI",
+    "title": "Human Centric MLOps: Why Productivity Matters the Most"
+  },
+  {
+    "id": "CKtWFD4gMao",
+    "title": "Intro to MLOps: Build, Deploy, and Retrain a Model in Production"
+  },
+  {
+    "id": "0brbsJ-qjaI",
+    "title": "Machine Learning Infrastructure at Facebook Scale"
+  },
+  {
+    "id": "F9EIGf6qv5s",
+    "title": "ML Observability: A Critical Piece in the ML Stack"
+  },
+  {
+    "id": "X077RrnHeL0",
+    "title": "MLOPs with Dataiku: Considerations For Model Deployment Monitoring"
+  },
+  {
+    "id": "Erj46rJdjtk",
+    "title": "Reproducible Machine Learning   How Not to Repeat the Past"
+  },
+  {
+    "id": "uax_LJDFdAI",
+    "title": "Running ML Inference Services in Shared Hosting Environments"
+  },
+  {
+    "id": "pdkeKTiSmko",
+    "title": "Shopping Recommendations at Pinterest"
+  },
+  {
+    "id": "REhD-w8OcYA",
+    "title": "The Critical Missing Component in the Production ML Stack"
+  },
+  {
+    "id": "JwuzXWe4kBw",
+    "title": "Opening Remarks - Sonya David"
+  },
+  {
+    "id": "_XTUnlqdpW0",
+    "title": "MLOPs with Dataiku   Considerations For Model Deployment Monitoring"
+  },
+  {
+    "id": "aoWrcgqCeis",
+    "title": "Building an ML Platform from Scratch"
+  },
+  {
+    "id": "PWuS6iS9le4",
+    "title": "Hands on Workshop: Create Machine Learning Retraining Pipelines"
+  },
+  {
+    "id": "7rXbc57tYZk",
+    "title": "The Ops In MLOps"
+  },
+  {
+    "id": "aONQnXJWqVY",
+    "title": "Building Real Time ML Pipelines with a Feature Store"
+  },
+  {
+    "id": "aNmKre57pNk",
+    "title": "Next gen AI Processors and Why We Need to Think Differently About SW 2 0"
+  },
+  {
+    "id": "GKI4qLnqs28",
+    "title": "Machine Learning for Entertainment   Challenges and Opportunities"
+  },
+  {
+    "id": "5cGqbJa7z1w",
+    "title": "Best Practices Deploying MLOps Solutions in Enterprise"
+  },
+  {
+    "id": "h5FyRze_z7o",
+    "title": "Deploying Efficient Data centric AI 100x Faster"
+  },
+  {
+    "id": "UrFMs1q7eIA",
+    "title": "Continuously Improving Large Scale Recommenders with MLOps Tools and Practices"
+  },
+  {
+    "id": "AOdXh0x7vr4",
+    "title": "The Privacy Considerations of Production Machine Learning"
+  },
+  {
+    "id": "NukaTHITecE",
+    "title": "Build High Performance MLOps With ML Monitoring and AI Explainability"
+  },
+  {
+    "id": "f_M3a6YJ4S8",
+    "title": "Using Reproducible Experiments To Create Better Machine Learning Models"
+  },
+  {
+    "id": "G71Y8eOBF2g",
+    "title": "5 Techniques to Increase Adoption Rates via Interpretability"
+  },
+  {
+    "id": "p4ty5_LrShU",
+    "title": "The Rapid Evolution of the Canonical Stack for Machine Learning"
+  },
+  {
+    "id": "gF3r0AnVHuo",
+    "title": "Introduction to Drifter ML"
+  }
+]
