@@ -14,8 +14,10 @@ from .utils import pretty_log
 image = modal.Image.debian_slim(  # we start from a lightweight linux distro
     python_version="3.10"  # we add a recent Python version
 ).pip_install(  # and we install the following packages:
-    "langchain==0.0.184",
+    "langchain==0.0.321",
     # 🦜🔗: a framework for building apps with LLMs
+    "langsmith==0.0.49",
+    # 🦜🛠️: monitoring framework for LLM apps
     "openai~=0.27.7",
     # high-quality language models and cheap embeddings
     "tiktoken",
@@ -24,10 +26,8 @@ image = modal.Image.debian_slim(  # we start from a lightweight linux distro
     # vector storage and similarity search
     "pymongo[srv]==3.11",
     # python client for MongoDB, our data persistence solution
-    "gradio~=3.34",
+    "gradio~=3.41",
     # simple web UIs in Python, from 🤗
-    "gantry==0.5.6",
-    # 🏗️: monitoring, observability, and continual improvement for ML systems
 )
 
 # we define a Stub to hold all the pieces of our app
@@ -39,7 +39,7 @@ stub = modal.Stub(
         # this is where we add API keys, passwords, and URLs, which are stored on Modal
         modal.Secret.from_name("mongodb-fsdl"),
         modal.Secret.from_name("openai-api-key-fsdl"),
-        modal.Secret.from_name("gantry-api-key-fsdl"),
+        modal.Secret.from_name("langchain-api-key-fsdl"),
     ],
     mounts=[
         # we make our local modules available to the container
@@ -62,7 +62,6 @@ vector_storage = modal.NetworkFileSystem.persisted("vector-vol")
 @modal.web_endpoint(method="GET")
 def web(query: str, request_id=None):
     """Exposes our Q&A chain for queries via a web endpoint."""
-    import os
 
     pretty_log(
         f"handling request with client-provided id: {request_id}"
@@ -71,7 +70,7 @@ def web(query: str, request_id=None):
     answer = qanda.remote(
         query,
         request_id=request_id,
-        with_logging=bool(os.environ.get("GANTRY_API_KEY")),
+        with_logging=True,
     )
     return {"answer": answer}
 
@@ -89,7 +88,7 @@ def qanda(query: str, request_id=None, with_logging: bool = False) -> str:
     Arguments:
         query: The query to run Q&A on.
         request_id: A unique identifier for the request.
-        with_logging: If True, logs the interaction to Gantry.
+        with_logging: If True, prints the interaction to the logs.
     """
     from langchain.chains.qa_with_sources import load_qa_with_sources_chain
     from langchain.chat_models import ChatOpenAI
@@ -124,16 +123,14 @@ def qanda(query: str, request_id=None, with_logging: bool = False) -> str:
     )
 
     result = chain(
-        {"input_documents": sources, "question": query}, return_only_outputs=True
+        {"input_documents": sources, "question": query},
+        return_only_outputs=True,
     )
+
     answer = result["output_text"]
 
     if with_logging:
         print(answer)
-        pretty_log("logging results to gantry")
-        record_key = log_event(query, sources, answer, request_id=request_id)
-        if record_key:
-            pretty_log(f"logged to gantry with key {record_key}")
 
     return answer
 
@@ -175,35 +172,6 @@ def drop_docs(collection: str = None, db: str = None):
     from . import docstore
 
     docstore.drop(collection, db)
-
-
-def log_event(query: str, sources, answer: str, request_id=None):
-    """Logs the event to Gantry."""
-    import os
-
-    import gantry
-
-    if not os.environ.get("GANTRY_API_KEY"):
-        pretty_log("No Gantry API key found, skipping logging")
-        return None
-
-    gantry.init(api_key=os.environ["GANTRY_API_KEY"], environment="modal")
-
-    application = "ask-fsdl"
-    join_key = str(request_id) if request_id else None
-
-    inputs = {"question": query}
-    inputs["docs"] = "\n\n---\n\n".join(source.page_content for source in sources)
-    inputs["sources"] = "\n\n---\n\n".join(
-        source.metadata["source"] for source in sources
-    )
-    outputs = {"answer_text": answer}
-
-    record_key = gantry.log_record(
-        application=application, inputs=inputs, outputs=outputs, join_key=join_key
-    )
-
-    return record_key
 
 
 def prep_documents_for_vector_storage(documents):
@@ -268,10 +236,11 @@ async def redirect_docs():
 def fastapi_app():
     """A simple Gradio interface for debugging."""
     import gradio as gr
-    from gradio.routes import App
+    from gradio.routes import mount_gradio_app
 
     def chain_with_logging(*args, **kwargs):
-        return qanda.remote(*args, with_logging=True, **kwargs)
+        answer = qanda.remote(*args, with_logging=True, **kwargs)
+        return answer
 
     inputs = gr.TextArea(
         label="Question",
@@ -302,18 +271,9 @@ def fastapi_app():
         article="# GitHub Repo: https://github.com/the-full-stack/ask-fsdl",
     )
 
-    interface.dev_mode = False
-    interface.config = interface.get_config_file()
-    interface.validate_queue_settings()
-    gradio_app = App.create_app(
-        interface, app_kwargs={"docs_url": "/docs", "title": "ask-FSDL"}
+    return mount_gradio_app(
+        app=web_app,
+        blocks=interface,
+        path="/gradio",
+        app_kwargs={"docs_url": "/docs", "title": "ask-FSDL"},
     )
-
-    @web_app.on_event("startup")
-    async def start_queue():
-        if gradio_app.get_blocks().enable_queue:
-            gradio_app.get_blocks().startup_events()
-
-    web_app.mount("/gradio", gradio_app)
-
-    return web_app
