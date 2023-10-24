@@ -96,10 +96,10 @@ environment: ## installs required environment for deployment and corpus generati
     else \
 			tasks/pretty_log.sh "$(ENV_LOADED)"; \
 	fi
-	python -m pip install -qqq -r requirements.txt
+	python -m pip install -qqq -r requirements/requirements.txt
 
 dev-environment: environment  ## installs required environment for development
-	python -m pip install -qqq -r requirements-dev.txt
+	python -m pip install -qqq -r requirements/requirements-dev.txt
 
 logo:  ## prints the logo
 	@cat logo.txt; echo "\n"

@@ -1,4 +1,4 @@
 -r requirements.txt
 black==22.3.0
 pre-commit
-ruff==0.0.270
+ruff==0.1.1
