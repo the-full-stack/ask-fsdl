@@ -11,6 +11,12 @@ source tasks/pretty_log.sh
 modal secret create mongodb-fsdl MONGODB_USER="$MONGODB_USER" MONGODB_HOST="$MONGODB_HOST" MONGODB_PASSWORD="$MONGODB_PASSWORD"
 modal secret create openai-api-key-fsdl OPENAI_API_KEY="$OPENAI_API_KEY"
 
+if [ "$WANDB_API_KEY" = "" ]; then
+  pretty_log "WANDB_API_KEY not set. Experiment logging to Weights & Biases will not be available."
+fi
+
+modal secret create wandb-api-key-fsdl WANDB_API_KEY="$WANDB_API_KEY"
+
 if [ "$LANGCHAIN_API_KEY" = "" ]; then
   pretty_log "LANGHAIN_API_KEY not set. Logging to LangSmith will not be available."
   LANGCHAIN_TRACING_V2=false
