@@ -33,7 +33,7 @@ stub = modal.Stub(
 
 
 @stub.function(
-    schedule=modal.Cron("17 1 * * 4"),
+    schedule=modal.Cron("17 11 * * 4"),  # run this weekly
     network_file_systems={
         str(VECTOR_DIR): vector_storage,
     },

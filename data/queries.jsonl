@@ -1,101 +1,101 @@
-{"question":"How can I be happy?","relevant":false}
-{"question":"What career should I pursue?","relevant":false}
-{"question":"How do I build a strong relationship?","relevant":false}
-{"question":"How can I manage stress?","relevant":false}
-{"question":"What are the best exercises for weight loss?","relevant":false}
-{"question":"How do I eat healthier?","relevant":false}
-{"question":"How can I improve my mental health?","relevant":false}
-{"question":"What are early signs of various diseases?","relevant":false}
-{"question":"What's the best smartphone on the market?","relevant":false}
-{"question":"How do I protect my online privacy?","relevant":false}
-{"question":"How can I learn to code?","relevant":false}
-{"question":"What's the meaning of life?","relevant":false}
-{"question":"Is there a universal moral code?","relevant":false}
-{"question":"Do we have free will?","relevant":false}
-{"question":"What is consciousness?","relevant":false}
-{"question":"How can I save more money?","relevant":false}
-{"question":"What's the best way to invest?","relevant":false}
-{"question":"How do I build good credit?","relevant":false}
-{"question":"How do taxes work?","relevant":false}
-{"question":"What is dark matter?","relevant":false}
-{"question":"How did the universe begin?","relevant":false}
-{"question":"Is time travel possible?","relevant":false}
-{"question":"What's the latest on climate change?","relevant":false}
-{"question":"How do I make sense of current events?","relevant":false}
-{"question":"What's the most effective way to enact social change?","relevant":false}
-{"question":"How does the electoral system work?","relevant":false}
-{"question":"What are human rights?","relevant":false}
-{"question":"What's the most effective way to learn?","relevant":false}
-{"question":"How do I improve my memory?","relevant":false}
-{"question":"What skills are essential for the future?","relevant":false}
-{"question":"How do I write a good resume?","relevant":false}
-{"question":"What's a must-see movie this year?","relevant":false}
-{"question":"Who are the most influential artists of all time?","relevant":false}
-{"question":"What are the cultural trends shaping society?","relevant":false}
-{"question":"How do I discover new music?","relevant":false}
-{"question":"Is there a God?","relevant":false}
-{"question":"What happens after we die?","relevant":false}
-{"question":"How do I meditate?","relevant":false}
-{"question":"What are the basic tenets of Islam?","relevant":false}
-{"question":"What are your business hours?","relevant":false}
-{"question":"How can I track my order?","relevant":false}
-{"question":"Do you offer refunds?","relevant":false}
-{"question":"Can I change my delivery address?","relevant":false}
-{"question":"How do I reset my password?","relevant":false}
-{"question":"Why am I experiencing slow internet speed?","relevant":false}
-{"question":"Can you guide me through installing this software?","relevant":false}
-{"question":"Is your service down right now?","relevant":false}
-{"question":"What are the symptoms of the flu?","relevant":false}
-{"question":"How do I manage high blood pressure?","relevant":false}
-{"question":"What's the correct dosage of this medication?","relevant":false}
-{"question":"Can you recommend a local doctor?","relevant":false}
-{"question":"What are the top tourist attractions in Paris?","relevant":false}
-{"question":"How do I cancel my hotel reservation?","relevant":false}
-{"question":"Can I get a refund for my flight?","relevant":false}
-{"question":"What are the visa requirements for Japan?","relevant":false}
-{"question":"Set a reminder for my meeting tomorrow at 3 PM.","relevant":false}
-{"question":"What's the weather like tomorrow?","relevant":false}
-{"question":"Text John to say I'll be 15 minutes late.","relevant":false}
-{"question":"Recommend a restaurant for dinner.","relevant":false}
-{"question":"Do you have this item in a size Medium?","relevant":false}
-{"question":"How long does shipping usually take?","relevant":false}
-{"question":"Can I apply multiple discount codes?","relevant":false}
-{"question":"Is this material machine-washable?","relevant":false}
-{"question":"How can I diversify my portfolio?","relevant":false}
-{"question":"What's the interest rate on this loan?","relevant":false}
-{"question":"How do I calculate my credit score?","relevant":false}
-{"question":"Should I invest in stocks or bonds?","relevant":false}
-{"question":"Explain the Pythagorean theorem.","relevant":false}
-{"question":"What is the capital of Australia?","relevant":false}
-{"question":"How do I cite a source in MLA format?","relevant":false}
-{"question":"Can you help me understand Python's list comprehensions?","relevant":false}
-{"question":"Recommend a good action movie.","relevant":false}
-{"question":"Who won the World Series in 2019?","relevant":false}
-{"question":"What are some popular books right now?","relevant":false}
-{"question":"Tell me a joke.","relevant":false}
-{"question":"How does MLOps differ from traditional software engineering?","relevant":true}
-{"question":"What are the key components of an MLOps pipeline?","relevant":true}
-{"question":"What tools are commonly used in an MLOps environment?","relevant":true}
-{"question":"How do containerization and orchestration technologies like Docker and Kubernetes fit into MLOps?","relevant":true}
-{"question":"What are the best practices for version control in machine learning projects?","relevant":true}
-{"question":"How is data ingested and preprocessed in an MLOps pipeline?","relevant":true}
-{"question":"What are the strategies for data versioning?","relevant":true}
-{"question":"How does one ensure data privacy and compliance in MLOps?","relevant":true}
-{"question":"How can one automate the training of machine learning models?","relevant":true}
-{"question":"What are some techniques for model validation in an MLOps pipeline?","relevant":true}
-{"question":"How can hyperparameter tuning be incorporated into MLOps?","relevant":true}
-{"question":"What metrics should be monitored during model deployment?","relevant":true}
-{"question":"How can one implement automated alerts for model performance degradation?","relevant":true}
-{"question":"What are some strategies for model retraining?","relevant":true}
-{"question":"How do teams collaborate effectively in an MLOps environment?","relevant":true}
-{"question":"What are the roles and responsibilities within an MLOps team?","relevant":true}
-{"question":"How can one ensure that ethical considerations are embedded in MLOps practices?","relevant":true}
-{"question":"What are some approaches for scaling MLOps across an organization?","relevant":true}
-{"question":"How can one optimize resource utilization in MLOps?","relevant":true}
-{"question":"What are some techniques for model optimization for edge devices?","relevant":true}
-{"question":"How does one calculate the ROI (Return on Investment) for an MLOps implementation?","relevant":true}
-{"question":"What are the cost factors involved in setting up an MLOps pipeline?","relevant":true}
-{"question":"Are there any open-source alternatives that can reduce the cost of MLOps?","relevant":true}
-{"question":"How is MLOps evolving with the advent of foundation models?","relevant":true}
-{"question":"What are some emerging best practices in MLOps?","relevant":true}
-{"question":"How do you see the role of AI ethics evolving within MLOps?","relevant":true}
+{"query":"How can I be happy?","relevance":false}
+{"query":"What career should I pursue?","relevance":false}
+{"query":"How do I build a strong relationship?","relevance":false}
+{"query":"How can I manage stress?","relevance":false}
+{"query":"What are the best exercises for weight loss?","relevance":false}
+{"query":"How do I eat healthier?","relevance":false}
+{"query":"How can I improve my mental health?","relevance":false}
+{"query":"What are early signs of various diseases?","relevance":false}
+{"query":"What's the best smartphone on the market?","relevance":false}
+{"query":"How do I protect my online privacy?","relevance":false}
+{"query":"How can I learn to code?","relevance":false}
+{"query":"What's the meaning of life?","relevance":false}
+{"query":"Is there a universal moral code?","relevance":false}
+{"query":"Do we have free will?","relevance":false}
+{"query":"What is consciousness?","relevance":false}
+{"query":"How can I save more money?","relevance":false}
+{"query":"What's the best way to invest?","relevance":false}
+{"query":"How do I build good credit?","relevance":false}
+{"query":"How do taxes work?","relevance":false}
+{"query":"What is dark matter?","relevance":false}
+{"query":"How did the universe begin?","relevance":false}
+{"query":"Is time travel possible?","relevance":false}
+{"query":"What's the latest on climate change?","relevance":false}
+{"query":"How do I make sense of current events?","relevance":false}
+{"query":"What's the most effective way to enact social change?","relevance":false}
+{"query":"How does the electoral system work?","relevance":false}
+{"query":"What are human rights?","relevance":false}
+{"query":"What's the most effective way to learn?","relevance":false}
+{"query":"How do I improve my memory?","relevance":false}
+{"query":"What skills are essential for the future?","relevance":false}
+{"query":"How do I write a good resume?","relevance":false}
+{"query":"What's a must-see movie this year?","relevance":false}
+{"query":"Who are the most influential artists of all time?","relevance":false}
+{"query":"What are the cultural trends shaping society?","relevance":false}
+{"query":"How do I discover new music?","relevance":false}
+{"query":"Is there a God?","relevance":false}
+{"query":"What happens after we die?","relevance":false}
+{"query":"How do I meditate?","relevance":false}
+{"query":"What are the basic tenets of Islam?","relevance":false}
+{"query":"What are your business hours?","relevance":false}
+{"query":"How can I track my order?","relevance":false}
+{"query":"Do you offer refunds?","relevance":false}
+{"query":"Can I change my delivery address?","relevance":false}
+{"query":"How do I reset my password?","relevance":false}
+{"query":"Why am I experiencing slow internet speed?","relevance":false}
+{"query":"Can you guide me through installing this software?","relevance":false}
+{"query":"Is your service down right now?","relevance":false}
+{"query":"What are the symptoms of the flu?","relevance":false}
+{"query":"How do I manage high blood pressure?","relevance":false}
+{"query":"What's the correct dosage of this medication?","relevance":false}
+{"query":"Can you recommend a local doctor?","relevance":false}
+{"query":"What are the top tourist attractions in Paris?","relevance":false}
+{"query":"How do I cancel my hotel reservation?","relevance":false}
+{"query":"Can I get a refund for my flight?","relevance":false}
+{"query":"What are the visa requirements for Japan?","relevance":false}
+{"query":"Set a reminder for my meeting tomorrow at 3 PM.","relevance":false}
+{"query":"What's the weather like tomorrow?","relevance":false}
+{"query":"Text John to say I'll be 15 minutes late.","relevance":false}
+{"query":"Recommend a restaurant for dinner.","relevance":false}
+{"query":"Do you have this item in a size Medium?","relevance":false}
+{"query":"How long does shipping usually take?","relevance":false}
+{"query":"Can I apply multiple discount codes?","relevance":false}
+{"query":"Is this material machine-washable?","relevance":false}
+{"query":"How can I diversify my portfolio?","relevance":false}
+{"query":"What's the interest rate on this loan?","relevance":false}
+{"query":"How do I calculate my credit score?","relevance":false}
+{"query":"Should I invest in stocks or bonds?","relevance":false}
+{"query":"Explain the Pythagorean theorem.","relevance":false}
+{"query":"What is the capital of Australia?","relevance":false}
+{"query":"How do I cite a source in MLA format?","relevance":false}
+{"query":"Can you help me understand Python's list comprehensions?","relevance":false}
+{"query":"Recommend a good action movie.","relevance":false}
+{"query":"Who won the World Series in 2019?","relevance":false}
+{"query":"What are some popular books right now?","relevance":false}
+{"query":"Tell me a joke.","relevance":false}
+{"query":"How does MLOps differ from traditional software engineering?","relevance":true}
+{"query":"What are the key components of an MLOps pipeline?","relevance":true}
+{"query":"What tools are commonly used in an MLOps environment?","relevance":true}
+{"query":"How do containerization and orchestration technologies like Docker and Kubernetes fit into MLOps?","relevance":true}
+{"query":"What are the best practices for version control in machine learning projects?","relevance":true}
+{"query":"How is data ingested and preprocessed in an MLOps pipeline?","relevance":true}
+{"query":"What are the strategies for data versioning?","relevance":true}
+{"query":"How does one ensure data privacy and compliance in MLOps?","relevance":true}
+{"query":"How can one automate the training of machine learning models?","relevance":true}
+{"query":"What are some techniques for model validation in an MLOps pipeline?","relevance":true}
+{"query":"How can hyperparameter tuning be incorporated into MLOps?","relevance":true}
+{"query":"What metrics should be monitored during model deployment?","relevance":true}
+{"query":"How can one implement automated alerts for model performance degradation?","relevance":true}
+{"query":"What are some strategies for model retraining?","relevance":true}
+{"query":"How do teams collaborate effectively in an MLOps environment?","relevance":true}
+{"query":"What are the roles and responsibilities within an MLOps team?","relevance":true}
+{"query":"How can one ensure that ethical considerations are embedded in MLOps practices?","relevance":true}
+{"query":"What are some approaches for scaling MLOps across an organization?","relevance":true}
+{"query":"How can one optimize resource utilization in MLOps?","relevance":true}
+{"query":"What are some techniques for model optimization for edge devices?","relevance":true}
+{"query":"How does one calculate the ROI (Return on Investment) for an MLOps implementation?","relevance":true}
+{"query":"What are the cost factors involved in setting up an MLOps pipeline?","relevance":true}
+{"query":"Are there any open-source alternatives that can reduce the cost of MLOps?","relevance":true}
+{"query":"How is MLOps evolving with the advent of foundation models?","relevance":true}
+{"query":"What are some emerging best practices in MLOps?","relevance":true}
+{"query":"How do you see the role of AI ethics evolving within MLOps?","relevance":true}

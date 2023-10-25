@@ -47,6 +47,7 @@ stub = modal.Stub(
     ],
 )
 
+SOURCE_LIMIT, QUERY_LIMIT = 3, 6
 VECTOR_DIR = vecstore.VECTOR_DIR
 vector_storage = modal.NetworkFileSystem.persisted("vector-vol")
 
@@ -65,12 +66,12 @@ def web(query: str, request_id=None):
         f"handling request with client-provided id: {request_id}"
     ) if request_id else None
 
-    answer, run_id = qanda.remote(
+    answer, metadata = qanda.remote(
         query,
         request_id=request_id,
         with_logging=True,
     )
-    return {"answer": answer, "run_id": run_id}
+    return {"answer": answer, "metadata": metadata}
 
 
 @stub.function(
@@ -92,7 +93,7 @@ def cli(query: str):
     },
     keep_warm=1,
 )
-def qanda(query: str, request_id=None, with_logging: bool = False) -> (str, str):
+def qanda(query: str, request_id=None, with_logging: bool = False) -> (str, dict):
     """Runs sourced Q&A for a query using LangChain.
 
     Arguments:
@@ -108,6 +109,7 @@ def qanda(query: str, request_id=None, with_logging: bool = False) -> (str, str)
     from . import vecstore
 
     embedding_engine = vecstore.get_embedding_engine(allowed_special="all")
+    metadata = {}
 
     pretty_log("connecting to vector storage")
     vector_index = vecstore.connect_to_vector_index(
@@ -118,9 +120,10 @@ def qanda(query: str, request_id=None, with_logging: bool = False) -> (str, str)
 
     pretty_log(f"running on query: {query}")
     pretty_log("selecting sources by similarity to query")
-    sources_and_scores = vector_index.similarity_search_with_score(query, k=3)
+    sources_and_scores = vector_index.similarity_search_with_score(query, k=QUERY_LIMIT)
 
-    sources, scores = zip(*sources_and_scores)
+    sources, scores = postprocess_sources(sources_and_scores)
+    metadata["retrieval_scores"] = scores
 
     pretty_log("running query against Q&A chain")
 
@@ -137,14 +140,14 @@ def qanda(query: str, request_id=None, with_logging: bool = False) -> (str, str)
         result = chain.invoke(
             {"input_documents": sources, "question": query},
         )
-        run_id = cb.traced_runs[0].id
+        metadata["run_id"] = cb.traced_runs[0].id
 
     answer = result["output_text"]
 
     if with_logging:
         print(answer)
 
-    return answer, run_id
+    return answer, metadata
 
 
 @stub.function(
@@ -184,6 +187,16 @@ def drop_docs(collection: str = None, db: str = None):
     from . import docstore
 
     docstore.drop(collection, db)
+
+
+def postprocess_sources(sources_and_scores):
+    sources_and_scores = sorted(
+        sources_and_scores, key=lambda ss: ss[1], reverse=True
+    )  # sort by decreasing similarity
+    sources, scores = zip(*sources_and_scores)  # unpack
+    sources = [source for source, score in zip(sources, scores) if score < 0.4]
+
+    return sources[:SOURCE_LIMIT], scores[:SOURCE_LIMIT]
 
 
 def prep_documents_for_vector_storage(documents):

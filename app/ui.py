@@ -36,21 +36,21 @@ async def redirect_docs():
 )
 @modal.asgi_app(label="askfsdl-backend")
 def fastapi_app():
-    """A simple Gradio interface for debugging."""
+    """A simple Gradio interface for debugging and playing around with the backend."""
     import gradio as gr
     from gradio.routes import mount_gradio_app
     import langsmith
 
     def chain_with_logging(*args, **kwargs):
-        answer, run_id = backend.qanda.remote(*args, with_logging=True, **kwargs)
-        return answer, run_id
+        answer, metadata = backend.qanda.remote(*args, with_logging=True, **kwargs)
+        return answer, metadata
 
-    def on_flag(run_id, client, key):
+    def on_flag(metadata, client, key):
         pretty_log(f"flagged with {key}")
-        pretty_log(run_id)
+        run_id = metadata.pop("run_id", None)
         if run_id is not None:
-            pretty_log("logging feedback to LangSmith")
-            client.create_feedback(run_id, key, score=True)
+            pretty_log(f"logging feedback to LangSmith for {run_id}")
+            client.create_feedback(run_id, key, score=True, source_info=metadata)
 
     interface = gr.Blocks(
         theme=gr.themes.Soft(
@@ -72,7 +72,7 @@ def fastapi_app():
             "👎": lambda run_id: _on_flag(run_id, key="thumbs-down"),
         }
 
-        run_id = gr.State(value=None)
+        metadata = gr.State(value={})
 
         gr.HTML("<h1>🤖❓ Ask Questions About Building AI Systems</h1>")
         gr.HTML("<h2>🦜 Get sourced answers from an LLM</h2>")
@@ -88,12 +88,12 @@ def fastapi_app():
 
         with gr.Row():
             submit = gr.Button("Submit", variant="primary")
-            submit.click(chain_with_logging, [inputs], [outputs, run_id])
+            submit.click(chain_with_logging, [inputs], [outputs, metadata])
 
         with gr.Row():
             for flagger_name, flagger_callback in flaggers.items():
                 flagger = gr.Button(flagger_name)
-                flagger.click(flagger_callback, [run_id])
+                flagger.click(flagger_callback, [metadata])
 
         gr.Examples(
             [
