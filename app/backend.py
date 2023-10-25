@@ -1,9 +1,7 @@
-"""Builds a CLI, Webhook, and Gradio app for Q&A on the Full Stack corpus.
+"""Builds a backend with CLI and webhook for Q&A on the Full Stack corpus.
 
-For details on corpus construction, see the accompanying notebook."""
+For details on corpus construction, see the accompanying notebooks."""
 import modal
-from fastapi import FastAPI
-from fastapi.responses import RedirectResponse
 
 from . import vecstore
 from .utils import pretty_log
@@ -73,6 +71,18 @@ def web(query: str, request_id=None):
         with_logging=True,
     )
     return {"answer": answer, "run_id": run_id}
+
+
+@stub.function(
+    image=image,
+    network_file_systems={
+        str(VECTOR_DIR): vector_storage,
+    },
+)
+def cli(query: str):
+    answer, _ = qanda.remote(query, with_logging=False)
+    pretty_log("🦜 ANSWER 🦜")
+    print(answer)
 
 
 @stub.function(
@@ -199,83 +209,3 @@ def prep_documents_for_vector_storage(documents):
         metadatas += doc_metadatas
 
     return ids, texts, metadatas
-
-
-@stub.function(
-    image=image,
-    network_file_systems={
-        str(VECTOR_DIR): vector_storage,
-    },
-)
-def cli(query: str):
-    answer, _ = qanda.remote(query, with_logging=False)
-    pretty_log("🦜 ANSWER 🦜")
-    print(answer)
-
-
-web_app = FastAPI(docs_url=None)
-
-
-@web_app.get("/")
-async def root():
-    return {"message": "See /gradio for the dev UI."}
-
-
-@web_app.get("/docs", response_class=RedirectResponse, status_code=308)
-async def redirect_docs():
-    """Redirects to the Gradio subapi docs."""
-    return "/gradio/docs"
-
-
-@stub.function(
-    image=image,
-    network_file_systems={
-        str(VECTOR_DIR): vector_storage,
-    },
-    keep_warm=1,
-    concurrency_limit=1,  # turn off concurrency until state bug resolved
-)
-@modal.asgi_app(label="askfsdl-backend")
-def fastapi_app():
-    """A simple Gradio interface for debugging."""
-    import gradio as gr
-    from gradio.routes import mount_gradio_app
-    import langsmith
-
-    def chain_with_logging(*args, **kwargs):
-        answer, run_id = qanda.remote(*args, with_logging=True, **kwargs)
-        return answer, run_id
-
-    interface = gr.Blocks()
-
-    with interface:
-        client = langsmith.Client()
-        run_id = gr.State(value=None)
-        inputs = gr.TextArea(
-            label="Question",
-            value="What are the most important principles of MLOps?",
-            show_label=True,
-        )
-        outputs = gr.TextArea(
-            label="Answer", value="The answer will appear here.", show_label=True
-        )
-
-        submit = gr.Button("Submit")
-        submit.click(chain_with_logging, [inputs], [outputs, run_id])
-
-        def on_flag(run_id):
-            pretty_log("flagged")
-            pretty_log(run_id)
-            if run_id is not None:
-                pretty_log("logging feedback to LangSmith")
-                client.create_feedback(run_id, "flagged", score=True)
-
-        flag = gr.Button("Flag")
-        flag.click(on_flag, [run_id])
-
-    return mount_gradio_app(
-        app=web_app,
-        blocks=interface,
-        path="/gradio",
-        app_kwargs={"docs_url": "/docs", "title": "ask-FSDL"},
-    )

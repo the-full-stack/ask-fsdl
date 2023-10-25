@@ -47,11 +47,12 @@ source tasks/pretty_log.sh
 
 if [ $drop ]; then
   pretty_log "Dropping collection $collection in $db"
-  modal run app.main::drop_docs --db "$db" --collection "$collection"
+  modal run app.backend::drop_docs --db "$db" --collection "$collection"
 fi
 
 pretty_log "Extracting video transcripts"
 modal run etl/videos.py --json-path data/videos.json --db "$db" --collection "$collection"
+modal run etl/videos.py --json-path data/mlops-world-videos.json --db "$db" --collection "$collection"
 
 pretty_log "Extracting Markdown lectures"
 modal run etl/markdown.py --json-path data/lectures-2022.json --db "$db" --collection "$collection"
