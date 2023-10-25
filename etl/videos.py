@@ -60,11 +60,13 @@ def main(json_path="data/videos.json", collection=None, db=None):
 )
 def extract_subtitles(video_info: VideoInfo) -> list[Document]:
     video_id, video_title = video_info["id"], video_info["title"]
-    subtitles = get_transcript(video_id)
-    chapters = get_chapters(video_id)
-    chapters = add_transcript(chapters, subtitles)
+    subtitles = get_transcript.local(video_id)
+    if subtitles is None:
+        return []
+    chapters = get_chapters.local(video_id)
+    chapters = add_transcript.local(chapters, subtitles)
 
-    documents = create_documents(chapters, video_id, video_title)
+    documents = create_documents.local(chapters, video_id, video_title)
 
     return documents
 
