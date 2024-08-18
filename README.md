@@ -66,4 +66,4 @@ to run the bot serverlessly.
 
 We use
 [Gantry](https://gantry.io)
-to monitor model behvaior in production and collect feedback from users.
+to monitor model behavior in production and collect feedback from users.
